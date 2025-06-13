@@ -1,116 +1,54 @@
-import 'dart:convert';
+
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:chat_bubbles/bubbles/bubble_normal.dart';
-import 'package:chatbot_sample_project/message.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:laennec_ai_health_assistant/bloc/chat_bloc.dart';
+import 'package:laennec_ai_health_assistant/bloc/chat_event.dart';
+import 'package:laennec_ai_health_assistant/bloc/chat_state.dart';
+
 
 import 'package:http/http.dart' as http;
+import 'package:laennec_ai_health_assistant/widgets/answer_options.dart';
+import 'package:laennec_ai_health_assistant/widgets/buildtext_composer.dart';
 
 // ChatScreen widget to display a chatbot interface
-class ChatScreen extends StatefulWidget {
+class ChatScreen extends StatelessWidget {
   const ChatScreen({super.key});
 
   @override
-  State<ChatScreen> createState() => _ChatScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => ChatBloc()..add(LoadQuestionnaire()),
+      child: const ChatView(),
+    );
+  }
 }
 
-class _ChatScreenState extends State<ChatScreen> {
-  // Controllers for text input and scrolling
-  TextEditingController controller = TextEditingController();
-  ScrollController scrollController = ScrollController();
+class ChatView extends StatefulWidget {
+  const ChatView({super.key});
 
-  // List to store chat messages
-  List<Message> msgs = [];
+  @override
+  State<ChatView> createState() => _ChatViewState();
+}
 
-  // Tracks if the bot is typing
-  bool isTyping = false;
+class _ChatViewState extends State<ChatView> {
+  final TextEditingController controller = TextEditingController();
+  final ScrollController scrollController = ScrollController();
 
-  // Function to send a message and get a response from Gemini API
-  void sendMsg() async {
-    String text = controller.text;
-    String apiKey =
-        "AIzaSyDriyxqH16j2oqAHZ6fPkbzZ4_sOQ1fHKo"; // User's Gemini API key
-    controller.clear();
+  @override
+  void dispose() {
+    controller.dispose();
+    scrollController.dispose();
+    super.dispose();
+  }
 
-    try {
-      if (text.isNotEmpty) {
-        // Add user message to the list and show typing indicator
-        setState(() {
-          msgs.insert(0, Message(true, text));
-          isTyping = true;
-        });
-
-        // Scroll to the top of the chat
-        scrollController.animateTo(
-          0.0,
-          duration: const Duration(seconds: 1),
-          curve: Curves.easeOut,
-        );
-
-        // Send the message to Gemini API
-        var response = await http.post(
-          Uri.parse(
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey",
-          ),
-          headers: {"Content-Type": "application/json"},
-          body: jsonEncode({
-            "contents": [
-              {
-                "parts": [
-                  {"text": text},
-                ],
-              },
-            ],
-          }),
-        );
-
-        if (response.statusCode == 200) {
-          var json = jsonDecode(response.body);
-          print(response.body);
-          setState(() {
-            isTyping = false;
-            msgs.insert(
-              0,
-              Message(
-                false,
-                json["candidates"][0]["content"]["parts"][0]["text"]
-                    .toString()
-                    .trim(),
-              ),
-            );
-          });
-
-          // Scroll to the top of the chat
-          scrollController.animateTo(
-            0.0,
-            duration: const Duration(seconds: 1),
-            curve: Curves.easeOut,
-          );
-        } else {
-          // Handle non-200 responses
-          print('API Error: ${response.statusCode}');
-          print('API Response: ${response.body}');
-          setState(() {
-            isTyping = false;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                "Error from API: ${response.statusCode} ${response.body}",
-              ),
-            ),
-          );
-        }
-      }
-    } on Exception catch (e) {
-      // Show error message if API call fails
-      print(e);
-      setState(() {
-        isTyping = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Some error occurred, please try again! Error: $e"),
-        ),
+  void _scrollToBottom() {
+    if (scrollController.hasClients) {
+      scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
       );
     }
   }
@@ -119,8 +57,12 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: 70,
+        title: const Text(
+          "Laennec AI  Health Assistant",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
-        title: const Text("Gemini ChatBot"),
         backgroundColor: Colors.indigo.shade900,
         elevation: 0,
       ),
@@ -132,131 +74,79 @@ class _ChatScreenState extends State<ChatScreen> {
             end: Alignment.bottomCenter,
           ),
         ),
-        child: Column(
-          children: [
-            const SizedBox(height: 8),
-            // Chat messages list
-            Expanded(
-              child: ListView.builder(
-                controller: scrollController,
-                itemCount: msgs.length,
-                shrinkWrap: true,
-                reverse: true,
-                itemBuilder: (context, index) {
-                  final message = msgs[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 4,
-                      horizontal: 12,
-                    ),
-                    child:
-                        isTyping && index == 0
-                            ? Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                BubbleNormal(
-                                  text: message.msg,
-                                  isSender: true,
-                                  color: Colors.white,
-                                  textStyle: const TextStyle(
-                                    color: Colors.black87,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                const Padding(
-                                  padding: EdgeInsets.only(left: 16, top: 4),
-                                  child: Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      "Typing...",
-                                      style: TextStyle(color: Colors.white70),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            )
-                            : BubbleNormal(
-                              text: message.msg,
-                              isSender: message.isSender,
-                              color:
-                                  message.isSender
-                                      ? Colors.white
-                                      : Colors.indigo.shade700,
-                              textStyle: TextStyle(
-                                color:
-                                    message.isSender
-                                        ? Colors.black87
-                                        : Colors.white,
-                                fontSize: 16,
-                              ),
-                            ),
-                  );
-                },
-              ),
-            ),
-            // Input field and send button
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: TextField(
-                          controller: controller,
-                          textCapitalization: TextCapitalization.sentences,
-                          onSubmitted: (value) {
-                            sendMsg();
-                          },
-                          textInputAction: TextInputAction.send,
-                          showCursor: true,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            hintText: "Enter text",
-                            hintStyle: TextStyle(color: Colors.white70),
-                          ),
+        child: BlocConsumer<ChatBloc, ChatState>(
+          listener: (context, state) {
+            if (state.messages.isNotEmpty) {
+              _scrollToBottom();
+            }
+          },
+          builder: (context, state) {
+            return Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    controller: scrollController,
+                    reverse: true,
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    itemCount: state.messages.length,
+                    itemBuilder: (context, index) {
+                      final msg = state.messages[index];
+                      return BubbleNormal(
+                        text: msg.msg,
+                        isSender: msg.isSender,
+                        color:
+                            msg.isSender
+                                ? Colors.white
+                                : Colors.indigo.shade700,
+                        textStyle: TextStyle(
+                          color: msg.isSender ? Colors.black87 : Colors.white,
+                          fontSize: 16,
                         ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  InkWell(
-                    onTap: () {
-                      sendMsg();
+                        tail: true,
+                        sent: msg.isSender,
+                      );
                     },
-                    borderRadius: BorderRadius.circular(30),
-                    child: Container(
-                      height: 50,
-                      width: 50,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Colors.purple, Colors.deepPurple.shade700],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(30),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
-                            spreadRadius: 1,
-                            blurRadius: 5,
-                            offset: const Offset(0, 2),
+                  ),
+                ),
+                if (state.isTyping)
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      left: 16.0,
+                      bottom: 8.0,
+                      top: 8.0,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        DefaultTextStyle(
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16.0,
+                            fontFamily: 'Ag-Book',
                           ),
-                        ],
-                      ),
-                      child: const Icon(Icons.send, color: Colors.white),
+                          child: Row(
+                            children: [
+                              Text("Typing"),
+                              AnimatedTextKit(
+                                animatedTexts: [
+                                  TyperAnimatedText(
+                                    '...',
+                                    speed: const Duration(milliseconds: 100),
+                                  ),
+                                ],
+                                isRepeatingAnimation: true,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ),
-          ],
+                buildAnswerOptions(context, state),
+                buildTextComposer(context, state),
+              ],
+            );
+          },
         ),
       ),
     );

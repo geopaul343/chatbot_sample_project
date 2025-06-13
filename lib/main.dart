@@ -1,11 +1,17 @@
-import 'package:chatbot_sample_project/chat_screen.dart';
-import 'package:chatbot_sample_project/sample_screen.dart';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:laennec_ai_health_assistant/bloc/chat_bloc.dart';
+import 'package:laennec_ai_health_assistant/bloc/chat_event.dart';
+import 'package:laennec_ai_health_assistant/bloc/chat_state.dart';
+
+
+import 'package:flutter/material.dart';
+import 'package:laennec_ai_health_assistant/splash_screen.dart';
 
 void main() {
   runApp(MyApp());
 }
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -14,10 +20,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
       ),
-      home: ChatScreen(),
+      home: SplashScreen(),
     );
   }
 }
