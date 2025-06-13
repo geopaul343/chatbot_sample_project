@@ -4,12 +4,16 @@ import 'package:laennec_ai_health_assistant/bloc/chat_bloc.dart';
 import 'package:laennec_ai_health_assistant/bloc/chat_event.dart';
 import 'package:laennec_ai_health_assistant/bloc/chat_state.dart';
 import 'package:laennec_ai_health_assistant/widgets/puffscount_anwer.dart';
-import 'package:numberpicker/numberpicker.dart';
+
 
 Widget buildAnswerOptions(BuildContext context, ChatState state) {
   if (!state.showAnswerOptions) {
     return const SizedBox.shrink();
   }
+
+  final screenWidth = MediaQuery.of(context).size.width;
+  final isSmallScreen = screenWidth < 360;
+  final isLargeScreen = screenWidth > 400;
 
   // Special case for puffs question (index 2)
   if (state.currentQuestionIndex == 2) {
@@ -24,13 +28,17 @@ Widget buildAnswerOptions(BuildContext context, ChatState state) {
   return Align(
     alignment: Alignment.centerRight,
     child: Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: 16.0,
+      margin: EdgeInsets.symmetric(
+        horizontal: screenWidth * 0.04,
         vertical: 8.0,
-      ).copyWith(left: 40.0, right: 16.0),
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-      constraints: const BoxConstraints(
-        maxHeight: 300, // Limit height to prevent overflow
+      ).copyWith(left: screenWidth * 0.1, right: screenWidth * 0.04),
+      padding: EdgeInsets.symmetric(
+        horizontal: screenWidth * 0.03,
+        vertical: 8.0,
+      ),
+      constraints: BoxConstraints(
+        maxHeight: isSmallScreen ? 250 : (isLargeScreen ? 350 : 300),
+        maxWidth: screenWidth * 0.85,
       ),
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -61,8 +69,8 @@ Widget buildAnswerOptions(BuildContext context, ChatState state) {
                         ),
                     borderRadius: BorderRadius.circular(12),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 10.0,
+                      padding: EdgeInsets.symmetric(
+                        vertical: isSmallScreen ? 8.0 : 10.0,
                         horizontal: 8.0,
                       ),
                       child: Row(
@@ -72,14 +80,18 @@ Widget buildAnswerOptions(BuildContext context, ChatState state) {
                                 ? Icons.check_circle
                                 : Icons.radio_button_unchecked,
                             color: isSelected ? Colors.white : Colors.white70,
-                            size: 22,
+                            size:
+                                isSmallScreen ? 20 : (isLargeScreen ? 24 : 22),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: screenWidth * 0.03),
                           Expanded(
                             child: Text(
                               answer,
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize:
+                                    isSmallScreen
+                                        ? 14
+                                        : (isLargeScreen ? 18 : 16),
                                 color: Colors.white,
                                 fontWeight:
                                     isSelected

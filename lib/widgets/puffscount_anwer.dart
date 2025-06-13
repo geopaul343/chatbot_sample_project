@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:laennec_ai_health_assistant/bloc/chat_bloc.dart';
@@ -9,23 +7,25 @@ import 'package:laennec_ai_health_assistant/bloc/chat_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-
-
-
-
-
-
 Widget buildPuffsPicker(BuildContext context, ChatState state) {
   int currentValue = int.tryParse(state.selectedAnswer ?? "1") ?? 1;
+
+  final screenWidth = MediaQuery.of(context).size.width;
+  final screenHeight = MediaQuery.of(context).size.height;
+  final isSmallScreen = screenWidth < 360;
+  final isLargeScreen = screenWidth > 400;
 
   return Align(
     alignment: Alignment.centerRight,
     child: Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: 16.0,
+      margin: EdgeInsets.symmetric(
+        horizontal: screenWidth * 0.04,
         vertical: 8.0,
-      ).copyWith(left: 40.0, right: 16.0),
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+      ).copyWith(left: screenWidth * 0.1, right: screenWidth * 0.04),
+      padding: EdgeInsets.symmetric(
+        horizontal: screenWidth * 0.03,
+        vertical: 8.0,
+      ),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [Colors.blue.shade300, Colors.blue.shade600],
@@ -40,10 +40,13 @@ Widget buildPuffsPicker(BuildContext context, ChatState state) {
         ),
       ),
       child: SizedBox(
-        width: 180,
-        height: 120,
+        width:
+            isSmallScreen
+                ? screenWidth * 0.4
+                : (isLargeScreen ? screenWidth * 0.5 : screenWidth * 0.45),
+        height: isSmallScreen ? 100 : (isLargeScreen ? 140 : 120),
         child: ListWheelScrollView(
-          itemExtent: 40,
+          itemExtent: isSmallScreen ? 35 : (isLargeScreen ? 45 : 40),
           diameterRatio: 1.5,
           magnification: 1.2,
           useMagnifier: true,
@@ -61,7 +64,12 @@ Widget buildPuffsPicker(BuildContext context, ChatState state) {
                   style: TextStyle(
                     color:
                         number == currentValue ? Colors.white : Colors.white70,
-                    fontSize: number == currentValue ? 24 : 18,
+                    fontSize:
+                        isSmallScreen
+                            ? (number == currentValue ? 20 : 16)
+                            : isLargeScreen
+                            ? (number == currentValue ? 28 : 22)
+                            : (number == currentValue ? 24 : 18),
                     fontWeight:
                         number == currentValue
                             ? FontWeight.bold

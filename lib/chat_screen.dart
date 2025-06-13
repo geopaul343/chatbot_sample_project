@@ -1,4 +1,3 @@
-
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:chat_bubbles/bubbles/bubble_normal.dart';
 import 'package:flutter/material.dart';
@@ -6,9 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:laennec_ai_health_assistant/bloc/chat_bloc.dart';
 import 'package:laennec_ai_health_assistant/bloc/chat_event.dart';
 import 'package:laennec_ai_health_assistant/bloc/chat_state.dart';
-
-
-import 'package:http/http.dart' as http;
 import 'package:laennec_ai_health_assistant/widgets/answer_options.dart';
 import 'package:laennec_ai_health_assistant/widgets/buildtext_composer.dart';
 
@@ -55,12 +51,22 @@ class _ChatViewState extends State<ChatView> {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final screenWidth = screenSize.width;
+    final screenHeight = screenSize.height;
+    final isSmallScreen = screenWidth < 360;
+    final isLargeScreen = screenWidth > 400;
+
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 70,
-        title: const Text(
-          "Laennec AI  Health Assistant",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        toolbarHeight: isSmallScreen ? 60 : 70,
+        title: Text(
+          "Laennec AI Health Assistant",
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: isSmallScreen ? 16 : (isLargeScreen ? 20 : 18),
+          ),
         ),
         centerTitle: true,
         backgroundColor: Colors.indigo.shade900,
@@ -87,7 +93,11 @@ class _ChatViewState extends State<ChatView> {
                   child: ListView.builder(
                     controller: scrollController,
                     reverse: true,
-                    padding: const EdgeInsets.only(bottom: 8.0),
+                    padding: EdgeInsets.only(
+                      bottom: 8.0,
+                      left: screenWidth * 0.02,
+                      right: screenWidth * 0.02,
+                    ),
                     itemCount: state.messages.length,
                     itemBuilder: (context, index) {
                       final msg = state.messages[index];
@@ -100,7 +110,8 @@ class _ChatViewState extends State<ChatView> {
                                 : Colors.indigo.shade700,
                         textStyle: TextStyle(
                           color: msg.isSender ? Colors.black87 : Colors.white,
-                          fontSize: 16,
+                          fontSize:
+                              isSmallScreen ? 14 : (isLargeScreen ? 18 : 16),
                         ),
                         tail: true,
                         sent: msg.isSender,
@@ -110,36 +121,45 @@ class _ChatViewState extends State<ChatView> {
                 ),
                 if (state.isTyping)
                   Padding(
-                    padding: const EdgeInsets.only(
-                      left: 16.0,
+                    padding: EdgeInsets.only(
+                      left: 0,
                       bottom: 8.0,
                       top: 8.0,
+                      right: screenWidth * 0.7,
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        DefaultTextStyle(
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16.0,
-                            fontFamily: 'Ag-Book',
-                          ),
-                          child: Row(
-                            children: [
-                              Text("Typing"),
-                              AnimatedTextKit(
-                                animatedTexts: [
-                                  TyperAnimatedText(
-                                    '...',
-                                    speed: const Duration(milliseconds: 100),
-                                  ),
-                                ],
-                                isRepeatingAnimation: true,
-                              ),
-                            ],
-                          ),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: screenWidth * 0.04,
+                        vertical: isSmallScreen ? 8.0 : 12.0,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.indigo.shade700,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(18),
+                          topRight: Radius.circular(18),
+                          bottomLeft: Radius.circular(4),
+                          bottomRight: Radius.circular(18),
                         ),
-                      ],
+                      ),
+                      child: AnimatedTextKit(
+                        animatedTexts: [
+                          TyperAnimatedText(
+                            '• • •',
+                            textStyle: TextStyle(
+                              color: Colors.white,
+                              fontSize:
+                                  isSmallScreen
+                                      ? 13.0
+                                      : (isLargeScreen ? 17.0 : 15.0),
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 4.0,
+                            ),
+                            speed: const Duration(milliseconds: 100),
+                          ),
+                        ],
+                        isRepeatingAnimation: true,
+                        repeatForever: true,
+                      ),
                     ),
                   ),
                 buildAnswerOptions(context, state),
