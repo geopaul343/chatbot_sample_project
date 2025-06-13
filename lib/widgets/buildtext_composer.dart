@@ -4,12 +4,12 @@ import 'package:laennec_ai_health_assistant/bloc/chat_bloc.dart';
 import 'package:laennec_ai_health_assistant/bloc/chat_event.dart';
 import 'package:laennec_ai_health_assistant/bloc/chat_state.dart';
 
-import 'package:flutter_bloc/flutter_bloc.dart';
-
 Widget buildTextComposer(BuildContext context, ChatState state) {
   final bool isQuestionnaireComplete = state.isQuestionnaireComplete;
   final bool isAITyping = state.isTyping;
-  final bool isEnabled = isQuestionnaireComplete && !isAITyping;
+  final bool expectingCustomInput = state.expectingCustomInput;
+  final bool isEnabled =
+      (isQuestionnaireComplete || expectingCustomInput) && !isAITyping;
   final TextEditingController controller = TextEditingController();
 
   final screenWidth = MediaQuery.of(context).size.width;
@@ -17,7 +17,9 @@ Widget buildTextComposer(BuildContext context, ChatState state) {
   final isLargeScreen = screenWidth > 400;
 
   String getHintText() {
-    if (!isQuestionnaireComplete) {
+    if (expectingCustomInput) {
+      return "Please enter your reason...";
+    } else if (!isQuestionnaireComplete) {
       return "Laennec ai";
     } else if (isAITyping) {
       return "AI is thinking...";

@@ -1,9 +1,5 @@
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:laennec_ai_health_assistant/bloc/chat_bloc.dart';
-import 'package:laennec_ai_health_assistant/bloc/chat_event.dart';
-import 'package:laennec_ai_health_assistant/bloc/chat_state.dart';
 import 'package:laennec_ai_health_assistant/chat_screen.dart';
 
 // Splash Screen

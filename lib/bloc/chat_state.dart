@@ -10,6 +10,8 @@ class ChatState extends Equatable {
   final int currentQuestionIndex;
   final String? selectedAnswer;
   final List<String> answers;
+  final List<String> userAnswers;
+  final bool expectingCustomInput;
 
   const ChatState({
     this.messages = const [],
@@ -19,6 +21,8 @@ class ChatState extends Equatable {
     this.currentQuestionIndex = 0,
     this.selectedAnswer,
     this.answers = const [],
+    this.userAnswers = const [],
+    this.expectingCustomInput = false,
   });
 
   ChatState copyWith({
@@ -29,6 +33,8 @@ class ChatState extends Equatable {
     int? currentQuestionIndex,
     String? selectedAnswer,
     List<String>? answers,
+    List<String>? userAnswers,
+    bool? expectingCustomInput,
     bool clearSelectedAnswer = false,
   }) {
     return ChatState(
@@ -41,6 +47,8 @@ class ChatState extends Equatable {
       selectedAnswer:
           clearSelectedAnswer ? null : selectedAnswer ?? this.selectedAnswer,
       answers: answers ?? this.answers,
+      userAnswers: userAnswers ?? this.userAnswers,
+      expectingCustomInput: expectingCustomInput ?? this.expectingCustomInput,
     );
   }
 
@@ -53,5 +61,7 @@ class ChatState extends Equatable {
     currentQuestionIndex,
     selectedAnswer,
     answers,
+    userAnswers,
+    expectingCustomInput,
   ];
 }
