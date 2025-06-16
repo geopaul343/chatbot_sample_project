@@ -9,6 +9,7 @@ steps:
   # Stage 2: Setup Android Signing
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
     id: 'setup-android-signing'
+    secretEnv: ['KEYSTORE_PASSWORD', 'KEY_PASSWORD']
     entrypoint: 'bash'
     args:
       - '-c'
@@ -27,6 +28,21 @@ steps:
           exit 1
         fi
         
+        # Create key.properties file
+        echo "Creating key.properties file..."
+        cat > android/key.properties <<EOF
+        storePassword=$$KEYSTORE_PASSWORD
+        keyPassword=$$KEY_PASSWORD
+        keyAlias=laennec-ai-key
+        storeFile=app/laennec-ai-release-key.jks
+        EOF
+        
+        # Verify SHA1 fingerprint of the keystore
+        echo "Verifying keystore SHA1 fingerprint..."
+        keytool -list -v -keystore android/app/laennec-ai-release-key.jks -alias laennec-ai-key -storepass $$KEYSTORE_PASSWORD | grep "SHA1:" || echo "Failed to get SHA1"
+        
+        echo "Contents of key.properties:"
+        cat android/key.properties
         echo "Android signing setup complete"
         ls -la android/app/laennec-ai-release-key.jks
     waitFor: ['flutter-dependencies']
@@ -186,3 +202,11 @@ tags:
   - 'flutter'
   - 'laennec-ai-health-assistant'
   - 'android'
+
+# Available secrets
+availableSecrets:
+  secretManager:
+    - versionName: projects/sample-gcp-actions-geo/secrets/keystore-password/versions/latest
+      env: 'KEYSTORE_PASSWORD'
+    - versionName: projects/sample-gcp-actions-geo/secrets/key-password/versions/latest
+      env: 'KEY_PASSWORD'

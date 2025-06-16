@@ -30,12 +30,15 @@ android {
     }
 
     signingConfigs {
-        if (keystorePropertiesFile.exists()) {
-            create("release") {
+        create("release") {
+            if (keystorePropertiesFile.exists()) {
                 keyAlias = keystoreProperties["keyAlias"] as String
                 keyPassword = keystoreProperties["keyPassword"] as String
                 storeFile = file(keystoreProperties["storeFile"] as String)
                 storePassword = keystoreProperties["storePassword"] as String
+            } else {
+                // Fail explicitly if keystore properties are missing
+                throw GradleException("key.properties file not found! Release signing requires keystore configuration.")
             }
         }
     }
@@ -53,11 +56,8 @@ android {
 
     buildTypes {
         release {
-            signingConfig = if (keystorePropertiesFile.exists()) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
-            }
+            // Always use release signing config - fail if not available
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }
