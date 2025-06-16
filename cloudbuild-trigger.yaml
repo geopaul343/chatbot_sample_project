@@ -3,8 +3,8 @@ description: "CI/CD pipeline for Laennec AI Health Assistant Flutter app"
 
 # Trigger configuration
 github:
-  owner: "YOUR_GITHUB_USERNAME"  # Replace with your GitHub username
-  name: "YOUR_REPOSITORY_NAME"   # Replace with your repository name
+  owner: "geopaul343"  # Replace with your GitHub username
+  name: "chatbot_sample_project"   # Replace with your repository name
   push:
     branch: "^main$"
 
@@ -24,4 +24,5 @@ includedFiles:
   - "cloudbuild.yaml"
 
 # Service account (replace with your service account email)
-serviceAccount: "projects/YOUR_PROJECT_ID/serviceAccounts/YOUR_SERVICE_ACCOUNT@YOUR_PROJECT_ID.iam.gserviceaccount.com" 
+serviceAccount: "projects/sample-gcp-actions-geo
+/serviceAccounts/chatbot-cicd@sample-gcp-actions-geo.iam.gserviceaccount.com" 
