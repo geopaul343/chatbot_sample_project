@@ -155,7 +155,7 @@ steps:
               package_name: "com.laennecai.healthassistant",
               track: "internal",
               aab: "artifacts/app-release.aab",
-              release_status: "draft",
+              release_status: "c",
               validate_only: true  # First validate without uploading
             )
             
@@ -165,7 +165,7 @@ steps:
               package_name: "com.laennecai.healthassistant",
               track: "internal",
               aab: "artifacts/app-release.aab",
-              release_status: "draft"
+              release_status: "completed"
             )
           end
         end
