@@ -148,14 +148,14 @@ steps:
         cat > fastlane/Fastfile <<EOF
         default_platform(:android)
         platform :android do
-          desc "Upload to Play Store Internal Track"
-          lane :deploy_internal do
+          desc "Upload to Play Store Production Track"
+          lane :deploy_production do
             upload_to_play_store(
               json_key: "key.json",
               package_name: "com.laennecai.healthassistant",
-              track: "internal",
+              track: "production",
               aab: "artifacts/app-release.aab",
-              release_status: "completed",
+              release_status: "draft",
               validate_only: true  # First validate without uploading
             )
             
@@ -163,9 +163,9 @@ steps:
             upload_to_play_store(
               json_key: "key.json",
               package_name: "com.laennecai.healthassistant",
-              track: "internal",
+              track: "production",
               aab: "artifacts/app-release.aab",
-              release_status: "completed"
+              release_status: "draft"
             )
           end
         end
@@ -185,7 +185,7 @@ steps:
         fi
 
         echo "Running Fastlane..."
-        fastlane android deploy_internal
+        fastlane android deploy_production
     waitFor: ['upload-to-storage', 'fetch-playstore-key']
 
 # Define timeout
