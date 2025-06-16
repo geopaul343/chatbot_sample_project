@@ -148,24 +148,14 @@ steps:
         cat > fastlane/Fastfile <<EOF
         default_platform(:android)
         platform :android do
-          desc "Upload to Play Store Production Track"
+          desc "Upload to Play Store Internal Track"
           lane :deploy_internal do
             upload_to_play_store(
               json_key: "key.json",
               package_name: "com.laennecai.healthassistant",
               track: "internal",
               aab: "artifacts/app-release.aab",
-              release_status: "c",
-              validate_only: true  # First validate without uploading
-            )
-            
-            # If validation succeeds, do the actual upload
-            upload_to_play_store(
-              json_key: "key.json",
-              package_name: "com.laennecai.healthassistant",
-              track: "internal",
-              aab: "artifacts/app-release.aab",
-              release_status: "completed"
+              release_status: "draft"
             )
           end
         end
@@ -194,7 +184,7 @@ timeout: '1800s'  # 30 minutes
 # Define substitutions
 substitutions:
   _BUCKET_NAME: 'chatbot_laennec_geo'
-  _VERSION_PREFIX: '1.0.3'
+  _VERSION_PREFIX: '1.0.2'
 
 # Build options
 options:
