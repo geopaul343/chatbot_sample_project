@@ -186,8 +186,3 @@ tags:
   - 'flutter'
   - 'Laennec AI Health Assistant'
   - 'android'
-
-# Add trigger configuration
-trigger:
-  event: 'push'
-  branch: 'main'
