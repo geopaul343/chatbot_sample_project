@@ -20,13 +20,17 @@ steps:
         mkdir -p android/app
         
         # Get keystore from Secret Manager (base64 encoded)
-        gcloud secrets versions access latest --secret="android-keystore" | base64 -d > android/app/laennec-ai-release-key.jks
+        gcloud secrets versions access latest --secret="android-keystore" | python3 -c "import sys, base64; sys.stdout.buffer.write(base64.b64decode(sys.stdin.read()))" > android/app/laennec-ai-release-key.jks
         
-        # Verify keystore exists
+        # Verify keystore exists and check its properties
         if [ ! -f "android/app/laennec-ai-release-key.jks" ]; then
           echo "Error: Keystore file not found"
           exit 1
         fi
+        
+        echo "Keystore file info:"
+        ls -la android/app/laennec-ai-release-key.jks
+        file android/app/laennec-ai-release-key.jks
         
         # Create key.properties file
         echo "Creating key.properties file..."
