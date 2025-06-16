@@ -6,21 +6,46 @@ steps:
     entrypoint: 'flutter'
     args: ['pub', 'get']
 
-  # Stage 2: Run Flutter Tests
+  # Stage 2: Setup Android Signing
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    id: 'setup-android-signing'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Setting up Android signing..."
+        
+        # Create keystore directory
+        mkdir -p android/app
+        
+        # Get keystore from Secret Manager
+        gcloud secrets versions access latest --secret="android-keystore" --out-file="android/app/laennec-ai-release-key.jks"
+        
+        # Verify keystore exists
+        if [ ! -f "android/app/laennec-ai-release-key.jks" ]; then
+          echo "Error: Keystore file not found"
+          exit 1
+        fi
+        
+        echo "Android signing setup complete"
+        ls -la android/app/laennec-ai-release-key.jks
+    waitFor: ['flutter-dependencies']
+
+  # Stage 3: Run Flutter Tests
   - name: 'ghcr.io/cirruslabs/flutter:stable'
     id: 'flutter-test'
     entrypoint: 'flutter'
     args: ['test']
-    waitFor: ['flutter-dependencies']
+    waitFor: ['setup-android-signing']
 
-  # Stage 3: Build Android App Bundle
+  # Stage 4: Build Android App Bundle
   - name: 'ghcr.io/cirruslabs/flutter:stable'
     id: 'build-android-release'
     entrypoint: 'flutter'
     args: ['build', 'appbundle', '--release']
     waitFor: ['flutter-test']
 
-  # Stage 4: Prepare Release Artifacts
+  # Stage 5: Prepare Release Artifacts
   - name: 'bash'
     id: 'prepare-release'
     entrypoint: 'bash'
@@ -33,7 +58,7 @@ steps:
         echo "Building version: $(cat artifacts/version.txt)"
     waitFor: ['build-android-release']
 
-  # Stage 5: Upload to Cloud Storage
+  # Stage 6: Upload to Cloud Storage
   - name: 'gcr.io/cloud-builders/gsutil'
     id: 'upload-to-storage'
     args:
@@ -42,7 +67,7 @@ steps:
       - 'gs://${_BUCKET_NAME}/releases/${_VERSION_PREFIX}-${BUILD_ID}.aab'
     waitFor: ['prepare-release']
 
-  # Stage 6: Get Play Store Credentials
+  # Stage 7: Get Play Store Credentials
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
     id: 'fetch-playstore-key'
     entrypoint: 'bash'
@@ -86,7 +111,7 @@ steps:
         ls -l key.json
     waitFor: ['prepare-release']
 
-  # Stage 7: Deploy to Play Store
+  # Stage 8: Deploy to Play Store
   - name: 'ruby:3.1'
     id: 'deploy-to-playstore'
     entrypoint: 'bash'
@@ -107,7 +132,7 @@ steps:
           lane :deploy_internal do
             upload_to_play_store(
               json_key: "key.json",
-              package_name: "com.example.chatbot_sample_project",
+              package_name: "com.laennecai.healthassistant",
               track: "internal",
               aab: "artifacts/app-release.aab",
               release_status: "draft",
@@ -117,10 +142,10 @@ steps:
             # If validation succeeds, do the actual upload
             upload_to_play_store(
               json_key: "key.json",
-              package_name: "com.example.chatbot_sample_project",
+              package_name: "com.laennecai.healthassistant",
               track: "internal",
               aab: "artifacts/app-release.aab",
-              release_status: "draft"
+              release_status: "completed"
             )
           end
         end
@@ -161,3 +186,8 @@ tags:
   - 'flutter'
   - 'Laennec AI Health Assistant'
   - 'android'
+
+# Add trigger configuration
+trigger:
+  event: 'push'
+  branch: 'main'

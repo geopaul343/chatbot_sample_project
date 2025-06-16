@@ -1,0 +1,27 @@
+name: "laennec-ai-flutter-cicd"
+description: "CI/CD pipeline for Laennec AI Health Assistant Flutter app"
+
+# Trigger configuration
+github:
+  owner: "YOUR_GITHUB_USERNAME"  # Replace with your GitHub username
+  name: "YOUR_REPOSITORY_NAME"   # Replace with your repository name
+  push:
+    branch: "^main$"
+
+# Build configuration
+filename: "cloudbuild.yaml"
+
+# Substitutions
+substitutions:
+  _BUCKET_NAME: "chatbot_laennec_geo"
+  _VERSION_PREFIX: "1.0.3"
+
+# Include in trigger
+includedFiles:
+  - "lib/**"
+  - "android/**"
+  - "pubspec.yaml"
+  - "cloudbuild.yaml"
+
+# Service account (replace with your service account email)
+serviceAccount: "projects/YOUR_PROJECT_ID/serviceAccounts/YOUR_SERVICE_ACCOUNT@YOUR_PROJECT_ID.iam.gserviceaccount.com" 
