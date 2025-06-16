@@ -164,6 +164,7 @@ class _ChatViewState extends State<ChatView> {
                   ),
                 buildAnswerOptions(context, state),
                 buildTextComposer(context, state),
+                SizedBox(height: 25),
               ],
             );
           },
