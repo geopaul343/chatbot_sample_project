@@ -14,7 +14,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 6), () {
+    Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -34,7 +34,7 @@ class _SplashScreenState extends State<SplashScreen> {
           children: [
         
             const SizedBox(height: 20),
-            Image.asset("assests/img_splash.png", width: 100, height: 100),
+            Image.asset("assets/img_splash.png", width: 100, height: 100),
             const Text(
               'Laennec AI',
               style: TextStyle(
