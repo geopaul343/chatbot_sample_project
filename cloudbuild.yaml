@@ -38,7 +38,7 @@ steps:
         storePassword=$$KEYSTORE_PASSWORD
         keyPassword=$$KEY_PASSWORD
         keyAlias=laennec-ai-key
-        storeFile=app/laennec-ai-release-key.jks
+        storeFile=laennec-ai-release-key.jks
         EOF
         
         # Verify SHA1 fingerprint of the keystore
