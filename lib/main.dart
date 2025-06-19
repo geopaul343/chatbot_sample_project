@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:laennec_ai_health_assistant/screens/chat_screen.dart';
 import 'package:laennec_ai_health_assistant/screens/splash_screen.dart';
 import 'package:laennec_ai_health_assistant/screens/privacy_policy_screen.dart';
 import 'package:laennec_ai_health_assistant/utils/first_launch_checker.dart';
@@ -35,36 +36,16 @@ class _AppLauncherState extends State<AppLauncher> {
   @override
   void initState() {
     super.initState();
-    _checkFirstLaunch();
+    // Use post frame callback to avoid calling Navigator during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _navigateToSplash();
+    });
   }
 
-  Future<void> _checkFirstLaunch() async {
-    // Small delay to ensure smooth startup
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    if (!mounted) return;
-
-    try {
-      final hasAcceptedPrivacy =
-          await FirstLaunchChecker.hasAcceptedPrivacyPolicy();
-
-      if (hasAcceptedPrivacy) {
-        // User has already accepted privacy policy, go to splash screen
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const SplashScreen()),
-        );
-      } else {
-        // First time user, show privacy policy
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const PrivacyPolicyScreen()),
-        );
-      }
-    } catch (e) {
-      // If there's an error checking preferences, default to showing privacy policy
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const PrivacyPolicyScreen()),
-      );
-    }
+  void _navigateToSplash() {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (context) => const SplashScreen()),
+    );
   }
 
   @override
