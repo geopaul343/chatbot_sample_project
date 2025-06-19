@@ -1,6 +1,5 @@
-
 import 'package:flutter/material.dart';
-import 'package:laennec_ai_health_assistant/chat_screen.dart';
+import 'package:laennec_ai_health_assistant/screens/chat_screen.dart';
 
 // Splash Screen
 class SplashScreen extends StatefulWidget {
@@ -32,7 +31,6 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-        
             const SizedBox(height: 20),
             Image.asset("assets/img_splash.png", width: 100, height: 100),
             const Text(

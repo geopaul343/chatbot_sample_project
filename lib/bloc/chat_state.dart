@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import 'package:laennec_ai_health_assistant/message.dart';
+import 'package:laennec_ai_health_assistant/model/message.dart';
 
 class ChatState extends Equatable {
   final List<Message> messages;

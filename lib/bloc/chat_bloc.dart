@@ -4,7 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:laennec_ai_health_assistant/bloc/chat_event.dart';
 import 'package:laennec_ai_health_assistant/bloc/chat_state.dart';
-import 'package:laennec_ai_health_assistant/message.dart';
+import 'package:laennec_ai_health_assistant/model/message.dart';
 import 'package:laennec_ai_health_assistant/questions/screen_questions.dart';
 
 class ChatBloc extends Bloc<ChatEvent, ChatState> {

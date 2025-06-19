@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:laennec_ai_health_assistant/bloc/chat_bloc.dart';
 import 'package:laennec_ai_health_assistant/bloc/chat_event.dart';
 import 'package:laennec_ai_health_assistant/bloc/chat_state.dart';
+import 'package:laennec_ai_health_assistant/screens/voice_chat_screen.dart';
 import 'package:laennec_ai_health_assistant/widgets/answer_options.dart';
 import 'package:laennec_ai_health_assistant/widgets/buildtext_composer.dart';
 
@@ -71,6 +72,20 @@ class _ChatViewState extends State<ChatView> {
         centerTitle: true,
         backgroundColor: Colors.indigo.shade900,
         elevation: 0,
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const VoiceChatScreen(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.mic, color: Colors.white),
+            tooltip: 'Voice Chat',
+          ),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(
