@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:laennec_ai_health_assistant/utils/first_launch_checker.dart';
-import 'package:laennec_ai_health_assistant/screens/privacy_policy_screen.dart';
+import 'package:laennec_ai_health_assistant/screens/medical_disclaimer_screen.dart';
 
 class DebugScreen extends StatefulWidget {
   const DebugScreen({super.key});
@@ -45,7 +45,7 @@ class _DebugScreenState extends State<DebugScreen> {
 
   Future<void> _showPrivacyPolicy() async {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const PrivacyPolicyScreen()),
+      MaterialPageRoute(builder: (context) => const MedicalDisclaimerScreen()),
     );
   }
 

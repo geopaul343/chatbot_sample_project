@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:laennec_ai_health_assistant/screens/chat_screen.dart';
 import 'package:laennec_ai_health_assistant/screens/splash_screen.dart';
-import 'package:laennec_ai_health_assistant/screens/privacy_policy_screen.dart';
-import 'package:laennec_ai_health_assistant/utils/first_launch_checker.dart';
 
 void main() {
   runApp(MyApp());
@@ -14,7 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Laennec AI Health Assistant',
+      title: 'Laennec AI Assistant',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
@@ -50,7 +47,6 @@ class _AppLauncherState extends State<AppLauncher> {
 
   @override
   Widget build(BuildContext context) {
-    // Show a simple loading screen while checking preferences
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -67,7 +63,7 @@ class _AppLauncherState extends State<AppLauncher> {
               Icon(Icons.health_and_safety, size: 80, color: Colors.white),
               SizedBox(height: 24),
               Text(
-                'Laennec AI Health Assistant',
+                'Laennec AI Assistant',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,

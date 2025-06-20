@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:laennec_ai_health_assistant/screens/chat_screen.dart';
-import 'package:laennec_ai_health_assistant/screens/privacy_policy_screen.dart';
+import 'package:laennec_ai_health_assistant/screens/medical_disclaimer_screen.dart';
+import 'package:laennec_ai_health_assistant/screens/update_required_screen.dart';
 import 'package:laennec_ai_health_assistant/utils/first_launch_checker.dart';
+import 'package:laennec_ai_health_assistant/utils/version_check_service.dart';
 
 // Splash Screen
 class SplashScreen extends StatefulWidget {
@@ -12,45 +14,69 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  String _statusMessage = 'Loading...';
+  bool _showError = false;
+
   @override
   void initState() {
     super.initState();
-    _startTimer();
+    _initializeApp();
   }
 
-  void _startTimer() {
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        _checkPrivacyPolicyAndNavigate();
-      }
+  Future<void> _initializeApp() async {
+    setState(() {
+      _statusMessage = 'Checking for updates...';
     });
-  }
 
-  Future<void> _checkPrivacyPolicyAndNavigate() async {
     try {
-      final hasAcceptedPrivacy =
-          await FirstLaunchChecker.hasAcceptedPrivacyPolicy();
+      // Check version first
+      final versionResult = await VersionCheckService.checkVersion();
 
-      if (hasAcceptedPrivacy) {
-        // User has already accepted privacy policy, go to chat screen
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => ChatScreen()),
-        );
-      } else {
-        // First time user, show privacy policy
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const PrivacyPolicyScreen()),
-        );
+      if (mounted) {
+        if (versionResult.isUpdateRequired) {
+          // Show update required screen
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (context) =>
+                      UpdateRequiredScreen(versionResult: versionResult),
+            ),
+          );
+        } else {
+          // Version is up to date, continue with normal flow
+          setState(() {
+            _statusMessage = 'Version up to date. Continuing...';
+          });
+
+          await Future.delayed(const Duration(milliseconds: 2000));
+
+          if (mounted) {
+            _navigateToDisclaimer();
+          }
+        }
       }
     } catch (e) {
-      // If there's an error checking preferences, default to showing privacy policy
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const PrivacyPolicyScreen()),
-      );
+      print('Version check error: $e');
+      setState(() {
+        _statusMessage = 'Version check failed. Continuing...';
+        _showError = true;
+      });
+
+      // In case of error, continue anyway after a short delay
+      await Future.delayed(const Duration(seconds: 1));
+      if (mounted) {
+        _navigateToDisclaimer();
+      }
     }
+  }
+
+  void _navigateToDisclaimer() {
+    // Always show medical disclaimer after version check
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const MedicalDisclaimerScreen()),
+    );
   }
 
   @override
@@ -62,13 +88,55 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const SizedBox(height: 20),
-            Image.asset("assets/img_splash.png", width: 100, height: 100),
+            Image.asset("assets/laennec_logo.png", width: 100, height: 100),
+            const SizedBox(height: 20),
             const Text(
               'Laennec AI',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 30),
+            // Status message
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.white.withOpacity(0.3)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (!_showError) ...[
+                    SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                  ] else ...[
+                    Icon(
+                      Icons.warning_amber_rounded,
+                      color: Colors.orange,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  Text(
+                    _statusMessage,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

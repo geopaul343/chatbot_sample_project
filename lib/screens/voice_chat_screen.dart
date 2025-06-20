@@ -24,6 +24,7 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
   bool _isSpeaking = false;
   String _lastWords = '';
   String _currentConversation = '';
+  bool _isProcessingResponse = false; // Flag to prevent overlapping responses
 
   // Error and status tracking
   String _statusMessage = 'Initializing...';
@@ -140,23 +141,70 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
       _speechEnabled = await _speechToText.initialize(
         onError: (error) {
           print('Speech recognition error: $error');
+          if (!mounted) return; // Check if widget is still mounted
+
           setState(() {
             _isListening = false;
-            _errorMessage = 'Speech error: ${error.errorMsg}';
-            _statusMessage = 'Speech error occurred';
           });
           _pulseController.stop();
+
+          // Handle specific error types
+          if (error.errorMsg == 'error_no_match' ||
+              error.errorMsg == 'error_speech_timeout') {
+            if (mounted) {
+              setState(() {
+                _statusMessage = 'I didn\'t catch that. Let me ask again.';
+                _errorMessage = '';
+              });
+            }
+
+            // Automatically retry for timeout/no-match errors
+            Future.delayed(const Duration(milliseconds: 1500), () {
+              if (mounted && !_hasError && !_isProcessingResponse) {
+                _isProcessingResponse = true;
+                _speak("I didn't catch that. Let me ask the question again.");
+                Future.delayed(const Duration(milliseconds: 3000), () {
+                  if (mounted && !_isListening && !_isSpeaking) {
+                    if (isQuestionnaireComplete) {
+                      _speak("You can ask me anything about your health.");
+                    } else {
+                      _speak(screenQuestions[currentQuestionIndex]);
+                      Future.delayed(const Duration(milliseconds: 2000), () {
+                        if (mounted) {
+                          _speakAnswerOptions(currentQuestionIndex);
+                          _isProcessingResponse = false;
+                        }
+                      });
+                    }
+                  } else {
+                    _isProcessingResponse = false;
+                  }
+                });
+              }
+            });
+          } else {
+            if (mounted) {
+              setState(() {
+                _errorMessage = 'Speech error: ${error.errorMsg}';
+                _statusMessage = 'Speech error occurred';
+              });
+            }
+          }
         },
         onStatus: (status) {
           print('Speech recognition status: $status');
+          if (!mounted) return; // Check if widget is still mounted
+
           setState(() {
             _statusMessage = 'Speech status: $status';
           });
 
           if (status == 'done' || status == 'notListening') {
-            setState(() {
-              _isListening = false;
-            });
+            if (mounted) {
+              setState(() {
+                _isListening = false;
+              });
+            }
             _pulseController.stop();
           }
         },
@@ -190,22 +238,29 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
       // Set handlers
       _flutterTts.setStartHandler(() {
         print('TTS started');
-        setState(() {
-          _isSpeaking = true;
-          _statusMessage = 'AI is speaking...';
-        });
+        if (mounted) {
+          setState(() {
+            _isSpeaking = true;
+            _statusMessage = 'AI is speaking...';
+          });
+        }
       });
 
       _flutterTts.setCompletionHandler(() {
         print('TTS completed');
-        setState(() {
-          _isSpeaking = false;
-          _statusMessage = 'Waiting for your response...';
-        });
+        if (mounted) {
+          setState(() {
+            _isSpeaking = false;
+            _statusMessage = 'Waiting for your response...';
+          });
+        }
         // Auto-restart listening after AI finishes speaking
-        if (_speechEnabled && !_hasError) {
+        if (_speechEnabled && !_hasError && !_isProcessingResponse) {
           Future.delayed(const Duration(milliseconds: 800), () {
-            if (!_isListening && mounted && !_isSpeaking) {
+            if (!_isListening &&
+                mounted &&
+                !_isSpeaking &&
+                !_isProcessingResponse) {
               _startListening();
             }
           });
@@ -214,15 +269,20 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
 
       _flutterTts.setErrorHandler((msg) {
         print('TTS Error: $msg');
-        setState(() {
-          _isSpeaking = false;
-          _errorMessage = 'TTS Error: $msg';
-          _statusMessage = 'Speech synthesis error';
-        });
+        if (mounted) {
+          setState(() {
+            _isSpeaking = false;
+            _errorMessage = 'TTS Error: $msg';
+            _statusMessage = 'Speech synthesis error';
+          });
+        }
         // Try to restart listening even if TTS fails
-        if (_speechEnabled && !_hasError) {
+        if (_speechEnabled && !_hasError && !_isProcessingResponse) {
           Future.delayed(const Duration(milliseconds: 500), () {
-            if (!_isListening && mounted && !_isSpeaking) {
+            if (!_isListening &&
+                mounted &&
+                !_isSpeaking &&
+                !_isProcessingResponse) {
               _startListening();
             }
           });
@@ -269,7 +329,11 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
   }
 
   Future<void> _speakAndWait(String text) async {
-    if (_hasError) return;
+    if (_hasError || !mounted) return;
+
+    // Stop any ongoing speech first
+    await _flutterTts.stop();
+    await Future.delayed(const Duration(milliseconds: 200));
 
     try {
       await _flutterTts.speak(text);
@@ -277,7 +341,7 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
       await Future.delayed(const Duration(milliseconds: 300));
       // Wait for the speech to complete with timeout
       int waitCount = 0;
-      while (_isSpeaking && waitCount < 100) {
+      while (_isSpeaking && waitCount < 100 && mounted) {
         // 10 second timeout
         await Future.delayed(const Duration(milliseconds: 100));
         waitCount++;
@@ -286,23 +350,28 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
       if (waitCount >= 100) {
         print('TTS timeout - forcing stop');
         await _flutterTts.stop();
-        setState(() {
-          _isSpeaking = false;
-        });
+        if (mounted) {
+          setState(() {
+            _isSpeaking = false;
+          });
+        }
       }
 
       await Future.delayed(const Duration(milliseconds: 300));
     } catch (e) {
       print('Speak and wait error: $e');
-      setState(() {
-        _errorMessage = 'Speaking failed: $e';
-        _isSpeaking = false;
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Speaking failed: $e';
+          _isSpeaking = false;
+        });
+      }
     }
   }
 
   void _speakAnswerOptions(int questionIndex) {
-    if (_hasError || questionIndex >= predefinedAnswers.length) return;
+    if (_hasError || questionIndex >= predefinedAnswers.length || !mounted)
+      return;
 
     if (predefinedAnswers[questionIndex].isNotEmpty) {
       String options;
@@ -326,7 +395,7 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
       }
 
       Future.delayed(const Duration(milliseconds: 800), () {
-        if (mounted && !_hasError) {
+        if (mounted && !_hasError && !_isProcessingResponse) {
           _speak(options);
         }
       });
@@ -344,15 +413,19 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
     try {
       await _speechToText.listen(
         onResult: _onSpeechResult,
-        listenFor: const Duration(seconds: 30),
-        pauseFor: const Duration(seconds: 3),
+        listenFor: const Duration(seconds: 15), // Reduced from 30 to 15 seconds
+        pauseFor: const Duration(seconds: 2), // Reduced from 3 to 2 seconds
         partialResults: true,
+        cancelOnError: false, // Don't cancel on error
+        listenMode: ListenMode.confirmation, // Better for command recognition
       );
 
       setState(() {
         _isListening = true;
         _statusMessage = 'Listening... Speak now';
         _lastWords = '';
+        _hasError = false; // Reset error state
+        _errorMessage = '';
       });
 
       _pulseController.repeat(reverse: true);
@@ -386,6 +459,8 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
   }
 
   void _onSpeechResult(SpeechRecognitionResult result) {
+    if (!mounted) return; // Check if widget is still mounted
+
     setState(() {
       _lastWords = result.recognizedWords;
       _statusMessage = result.finalResult ? 'Processing...' : 'Listening...';
@@ -401,7 +476,7 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
   }
 
   void _processUserInput(String userInput) {
-    if (userInput.trim().isEmpty) return;
+    if (userInput.trim().isEmpty || !mounted) return;
 
     setState(() {
       _currentConversation += "You: $userInput\n\n";
@@ -609,11 +684,47 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
 
       // Handle numbers for puffs
       if (RegExp(r'^\d+$').hasMatch(option.trim())) {
+        // Direct number match
         RegExp numberRegex = RegExp(r'\b(\d+)\b');
         Match? match = numberRegex.firstMatch(userInput);
         if (match != null) {
           String extractedNumber = match.group(1)!;
           if (extractedNumber == option) {
+            return option;
+          }
+        }
+
+        // Handle spoken numbers
+        Map<String, String> spokenNumbers = {
+          'one': '1',
+          'two': '2',
+          'three': '3',
+          'four': '4',
+          'five': '5',
+          'six': '6',
+          'seven': '7',
+          'eight': '8',
+          'nine': '9',
+          'ten': '10',
+          'eleven': '11',
+          'twelve': '12',
+          'thirteen': '13',
+          'fourteen': '14',
+          'fifteen': '15',
+          'sixteen': '16',
+          'seventeen': '17',
+          'eighteen': '18',
+          'nineteen': '19',
+          'twenty': '20',
+          'twenty-one': '21',
+          'twenty-two': '22',
+          'twenty-three': '23',
+          'twenty-four': '24',
+          'twenty-five': '25',
+        };
+
+        for (String word in spokenNumbers.keys) {
+          if (userInput.contains(word) && spokenNumbers[word] == option) {
             return option;
           }
         }
@@ -724,15 +835,21 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
   }
 
   void _speak(String text) async {
-    if (_hasError) return;
+    if (_hasError || !mounted || _isProcessingResponse) return;
+
+    // Stop any ongoing speech first to prevent overlaps
+    await _flutterTts.stop();
+    await Future.delayed(const Duration(milliseconds: 200));
 
     try {
       await _flutterTts.speak(text);
     } catch (e) {
       print('Speak error: $e');
-      setState(() {
-        _errorMessage = 'Failed to speak: $e';
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Failed to speak: $e';
+        });
+      }
     }
   }
 
@@ -747,6 +864,7 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
       _hasError = false;
       _errorMessage = '';
       _statusMessage = 'Restarting...';
+      _isProcessingResponse = false; // Reset processing state
     });
     _initializeVoiceFeatures();
   }
@@ -786,9 +904,18 @@ class _VoiceChatScreenState extends State<VoiceChatScreen>
 
   @override
   void dispose() {
+    // Clean up animation controller
     _pulseController.dispose();
+
+    // Stop and clean up TTS
     _flutterTts.stop();
+    _flutterTts.setStartHandler(() {});
+    _flutterTts.setCompletionHandler(() {});
+    _flutterTts.setErrorHandler((message) {});
+
+    // Stop and clean up speech recognition
     _speechToText.stop();
+
     super.dispose();
   }
 
