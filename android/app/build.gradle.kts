@@ -15,18 +15,6 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
-fun localProperties(): Properties {
-    val properties = Properties()
-    val localPropertiesFile = rootProject.file("local.properties")
-    if (localPropertiesFile.exists()) {
-        properties.load(localPropertiesFile.reader())
-    }
-    return properties
-}
-
-val flutterVersionCode: String? by localProperties()
-val flutterVersionName: String? by localProperties()
-
 android {
     namespace = "com.laennecai.healthassistant"
     compileSdk = flutter.compileSdkVersion
@@ -59,8 +47,8 @@ android {
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 23
         targetSdk = 34
-        versionCode = (flutterVersionCode ?: "1").toInt()
-        versionName = flutterVersionName ?: "1.0"
+        versionCode = 5
+        versionName = "1.0.0"
     }
 
     buildTypes {
