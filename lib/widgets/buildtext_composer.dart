@@ -56,7 +56,7 @@ Widget buildTextComposer(BuildContext context, ChatState state) {
     if (expectingCustomInput) {
       return "Please enter your reason...";
     } else if (!isQuestionnaireComplete) {
-      return "Laennec ai";
+      return "Laennec AI";
     } else if (isAITyping) {
       return "AI is thinking...";
     } else {
@@ -75,24 +75,24 @@ Widget buildTextComposer(BuildContext context, ChatState state) {
     ),
     child: Row(
       children: [
-        Padding(
-          padding: EdgeInsets.only(left: screenWidth * 0.02),
-          child: IconButton(
-            iconSize: isSmallScreen ? 20 : (isLargeScreen ? 28 : 24),
-            icon: Icon(
-              Icons.mic,
-              color: isEnabled ? Colors.white : Colors.grey.withOpacity(0.5),
-            ),
-            onPressed:
-                isEnabled
-                    ? () {
-                     Navigator.push(context, MaterialPageRoute(builder:(context) {
-                                    return const VoiceChatScreen();
-                     }, ));
-                    }
-                    : null,
-          ),
-        ),
+        // Padding(
+        //   padding: EdgeInsets.only(left: screenWidth * 0.02),
+        //   child: IconButton(
+        //     iconSize: isSmallScreen ? 20 : (isLargeScreen ? 28 : 24),
+        //     icon: Icon(
+        //       Icons.mic,
+        //       color: isEnabled ? Colors.white : Colors.grey.withOpacity(0.5),
+        //     ),
+        //     onPressed:
+        //         isEnabled
+        //             ? () {
+        //              Navigator.push(context, MaterialPageRoute(builder:(context) {
+        //                             return const VoiceChatScreen();
+        //              }, ));
+        //             }
+        //             : null,
+        //   ),
+        // ),
         Expanded(
           child: TextField(
             controller: controller,
