@@ -12,7 +12,8 @@
 4. [How to Deploy Your App](#how-to-deploy-your-app)
 5. [Understanding Play Store Release Types](#understanding-play-store-release-types)
 6. [Troubleshooting](#troubleshooting)
-7. [Quick Reference](#quick-reference)
+7. [Version Synchronization Guide](#version-synchronization-guide)
+8. [Quick Reference](#quick-reference)
 
 ---
 
@@ -62,6 +63,12 @@ version: 1.0.5+10
 #    Name      Code
 ```
 
+### ⚠️ **CRITICAL**: Version numbers must be synchronized across **4 files**:
+1. `pubspec.yaml`
+2. `android/app/build.gradle.kts`
+3. `cloudbuild.yaml`
+4. `cloudbuild-trigger.yaml`
+
 ---
 
 ## 🔄 How to Update Your App Version
@@ -76,22 +83,46 @@ version: 1.0.5+10
 
 ### 📝 Step-by-Step Instructions
 
-1. **Open `pubspec.yaml` file**
-2. **Find this line:**
-   ```yaml
-   version: 1.0.5+10
-   ```
-3. **Update both numbers:**
-   ```yaml
-   version: 1.0.6+11  # New version!
-   ```
-4. **Update the CI/CD configuration:**
-   - Open `cloudbuild.yaml`
-   - Find this line: `_VERSION_PREFIX: '1.0.5'`
-   - Change it to: `_VERSION_PREFIX: '1.0.6'`
+**⚠️ IMPORTANT**: You must update **ALL 4 FILES** every time, or your build will fail!
 
-5. **Save both files**
-6. **Push to GitHub** (this starts the deployment!)
+#### 1. **Update `pubspec.yaml`**
+```yaml
+# OLD
+version: 1.0.5+10
+
+# NEW
+version: 1.0.6+11
+```
+
+#### 2. **Update `android/app/build.gradle.kts`**
+```kotlin
+defaultConfig {
+    // ... other settings ...
+    versionCode = 11        // ← Match the +11 from pubspec.yaml
+    versionName = "1.0.6"   // ← Match the 1.0.6 from pubspec.yaml
+}
+```
+
+#### 3. **Update `cloudbuild.yaml`**
+```yaml
+substitutions:
+  _BUCKET_NAME: 'chatbot_laennec_geo'
+  _VERSION_PREFIX: '1.0.6'  # ← Match pubspec.yaml
+```
+
+#### 4. **Update `cloudbuild-trigger.yaml`**
+```yaml
+substitutions:
+  _BUCKET_NAME: "chatbot_laennec_geo"
+  _VERSION_PREFIX: "1.0.6"  # ← Match pubspec.yaml
+```
+
+#### 5. **Save ALL files and push**
+```bash
+git add .
+git commit -m "Release version 1.0.6+11 - Fixed bug in chat"
+git push origin main
+```
 
 ---
 
@@ -99,17 +130,18 @@ version: 1.0.5+10
 
 ### 🌟 The Simple Way (Automatic)
 1. **Make your changes** to the app code
-2. **Update version numbers** (see above section)
-3. **Commit your changes:**
+2. **Update version numbers in ALL 4 files** (see above section)
+3. **Use the version synchronization checklist** (see below)
+4. **Commit your changes:**
    ```bash
    git add .
-   git commit -m "Release version 1.0.6 - Fixed bug in chat"
+   git commit -m "Release version 1.0.6+11 - Fixed bug in chat"
    ```
-4. **Push to GitHub:**
+5. **Push to GitHub:**
    ```bash
    git push origin main
    ```
-5. **🎉 Wait for magic to happen!** (Takes about 10-15 minutes)
+6. **🎉 Wait for magic to happen!** (Takes about 10-15 minutes)
 
 ### 🔍 How to Check if it Worked
 1. Go to [Google Cloud Build Console](https://console.cloud.google.com/cloud-build/builds)
@@ -173,11 +205,27 @@ To release to everyone:
 
 ### ❌ Common Problems and Solutions
 
+#### 🔴 Build Failed - "Version code X has already been used"
+**Problem**: You're trying to upload a version code that was already used
+**Solution**: 
+1. Check [Play Console](https://play.google.com/console) to see the highest version code used
+2. Update `pubspec.yaml` to use a higher version code: `version: 1.0.6+XX` (where XX is higher than the last used)
+3. Update **ALL 4 FILES** with the new version
+4. Push again
+
 #### 🔴 Build Failed - "Version code not greater than current"
-**Problem**: You forgot to increase the version code
+**Problem**: Your new version code isn't higher than the last uploaded version
 **Solution**: 
 1. Open `pubspec.yaml`
-2. Change `version: 1.0.5+10` to `version: 1.0.5+11` (increase the number after +)
+2. Increase the version code: `version: 1.0.5+10` → `version: 1.0.5+11`
+3. Update **ALL 4 FILES** (see version synchronization guide)
+4. Push again
+
+#### 🔴 Build Failed - "Version mismatch between files"
+**Problem**: Version numbers don't match across configuration files
+**Solution**: 
+1. Use the **Version Synchronization Checklist** below
+2. Make sure all 4 files have matching version numbers
 3. Push again
 
 #### 🔴 Build Failed - "Keystore not found"
@@ -195,6 +243,15 @@ To release to everyone:
 2. Find your app → Internal Testing
 3. Click "Publish" on the draft release
 
+#### 🔴 CI/CD Was Working, Now It's Broken
+**Common Causes**:
+- **Merge conflicts** that weren't properly resolved
+- **Version numbers out of sync** across files
+- **Old configuration files** not updated
+- **Package name changes** during app renaming
+
+**Solution**: Use the complete **Version Synchronization Guide** below
+
 ### 📞 Where to Get Help
 1. Check [Google Cloud Build logs](https://console.cloud.google.com/cloud-build/builds)
 2. Check [Play Console](https://play.google.com/console) for any warnings
@@ -202,13 +259,85 @@ To release to everyone:
 
 ---
 
+## 🔄 Version Synchronization Guide
+
+### 🚨 **CRITICAL**: Always Keep These 4 Files in Sync
+
+When your CI/CD breaks, it's usually because these files have different version numbers:
+
+#### ✅ **Pre-Release Checklist**
+
+**1. Check `pubspec.yaml`:**
+```yaml
+version: 1.0.6+11  # ← Note these numbers
+```
+
+**2. Check `android/app/build.gradle.kts`:**
+```kotlin
+versionCode = 11        # ← Must match +11 above
+versionName = "1.0.6"   # ← Must match 1.0.6 above
+```
+
+**3. Check `cloudbuild.yaml`:**
+```yaml
+_VERSION_PREFIX: '1.0.6'  # ← Must match 1.0.6 above
+```
+
+**4. Check `cloudbuild-trigger.yaml`:**
+```yaml
+_VERSION_PREFIX: "1.0.6"  # ← Must match 1.0.6 above
+```
+
+### 🔍 **Version Sync Verification Commands**
+
+Before pushing, run these commands to verify sync:
+
+```bash
+# Check pubspec.yaml version
+grep "version:" pubspec.yaml
+
+# Check Android version
+grep -A 2 -B 2 "versionCode\|versionName" android/app/build.gradle.kts
+
+# Check cloudbuild.yaml version
+grep "_VERSION_PREFIX" cloudbuild.yaml
+
+# Check trigger version
+grep "_VERSION_PREFIX" cloudbuild-trigger.yaml
+```
+
+### 🛠️ **How to Fix Version Sync Issues**
+
+If your versions are out of sync:
+
+1. **Choose the highest version code** from any of the files
+2. **Add 1 to that number** for your new version code
+3. **Update ALL 4 files** to use the new version
+4. **Commit and push**
+
+**Example Fix:**
+```bash
+# If your files show different versions, pick the highest and increment:
+# pubspec.yaml: 1.0.5+10
+# build.gradle.kts: versionCode = 7
+# cloudbuild.yaml: _VERSION_PREFIX: '1.0.3'
+
+# Choose highest version code (10) and increment to 11
+# Update all files to: 1.0.6+11
+```
+
+---
+
 ## 📋 Quick Reference
 
 ### 🔥 Emergency Checklist - "My Build Failed!"
 - [ ] Did you increase the version code number (the +X part)?
+- [ ] Did you update **ALL 4 configuration files**?
+- [ ] Do all 4 files have **matching version numbers**?
 - [ ] Did you push to the `main` branch?
 - [ ] Are there any linting errors in your code?
 - [ ] Did you check the Cloud Build logs for error messages?
+- [ ] Are you in the middle of a merge? (Complete it first!)
 
 ### 📊 Version Update Cheat Sheet
 ```yaml
@@ -230,15 +359,24 @@ version: 2.0.0+11
 ```bash
 # The only commands you need!
 git add .
-git commit -m "Release version X.Y.Z - What you changed"
+git commit -m "Release version X.Y.Z+N - What you changed"
 git push origin main
 ```
+
+### 📁 **The 4 Files You Must Always Update Together**
+1. `pubspec.yaml` → `version: X.Y.Z+N`
+2. `android/app/build.gradle.kts` → `versionCode = N` & `versionName = "X.Y.Z"`
+3. `cloudbuild.yaml` → `_VERSION_PREFIX: 'X.Y.Z'`
+4. `cloudbuild-trigger.yaml` → `_VERSION_PREFIX: "X.Y.Z"`
 
 ### 🔗 Important Links
 - [Google Cloud Build Console](https://console.cloud.google.com/cloud-build/builds?project=sample-gcp-actions-geo)
 - [Google Play Console](https://play.google.com/console)
 - [Google Cloud Secret Manager](https://console.cloud.google.com/security/secret-manager?project=sample-gcp-actions-geo)
 - [Storage Bucket](https://console.cloud.google.com/storage/browser/chatbot_laennec_geo?project=sample-gcp-actions-geo)
+
+### 🎯 **Remember: The Golden Rule**
+**Never update just one file!** Always update all 4 version configuration files together, or your build will fail with version conflicts.
 
 ---
 
@@ -248,10 +386,5 @@ You now have a fully automated deployment system! Every time you push code to Gi
 - ✅ Build and test
 - ✅ Sign with your certificates  
 - ✅ Upload to Play Store
-- ✅ Make available to your test users
 
-**🚀 Pro Tip**: Always test your changes locally before pushing to make sure everything works!
-
----
-
-*💡 Remember: With great automation comes great responsibility. Always make sure your code works before pushing to main branch!* 
+**🔑 Key to Success**: Always keep your version numbers synchronized across all 4 configuration files! 

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
@@ -37,6 +36,7 @@ import 'package:laennec_ai_assistant/utils/version_check_service.dart';
 import 'package:laennec_ai_assistant/widgets/answer_options.dart';
 import 'package:laennec_ai_assistant/widgets/buildtext_composer.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 // Splash Screen
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -57,9 +57,11 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _initializeApp() async {
     setState(() {
-      _statusMessage = 'Checking for updates...';
+      _statusMessage = 'Loading...';
     });
 
+    // TODO: Version checking is temporarily disabled - uncomment when needed
+    /*
     try {
       // Check version first
       final versionResult = await VersionCheckService.checkVersion();
@@ -100,6 +102,18 @@ class _SplashScreenState extends State<SplashScreen> {
       if (mounted) {
         _navigateToDisclaimer();
       }
+    }
+    */
+
+    // Skip version check and go directly to disclaimer
+    setState(() {
+      _statusMessage = 'Loading application...';
+    });
+
+    await Future.delayed(const Duration(milliseconds: 1500));
+
+    if (mounted) {
+      _navigateToDisclaimer();
     }
   }
 
