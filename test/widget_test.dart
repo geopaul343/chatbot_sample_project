@@ -3,7 +3,7 @@
 // More comprehensive tests will be added later
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:laennec_ai_health_assistant/main.dart';
+import 'package:laennec_ai_assistant/main.dart';
 
 void main() {
   testWidgets('App builds without crashing', (WidgetTester tester) async {

@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:bloc/bloc.dart';
 import 'package:http/http.dart' as http;
-import 'package:laennec_ai_health_assistant/bloc/chat_event.dart';
-import 'package:laennec_ai_health_assistant/bloc/chat_state.dart';
-import 'package:laennec_ai_health_assistant/model/message.dart';
-import 'package:laennec_ai_health_assistant/questions/screen_questions.dart';
+import 'package:laennec_ai_assistant/bloc/chat_event.dart';
+import 'package:laennec_ai_assistant/bloc/chat_state.dart';
+import 'package:laennec_ai_assistant/model/message.dart';
+import 'package:laennec_ai_assistant/questions/screen_questions.dart';
 
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
   // Hardcoded API key and answers for simplicity in the BLoC context.

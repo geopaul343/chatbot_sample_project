@@ -5,7 +5,7 @@
     <uses-permission android:name="android.permission.MICROPHONE"/>
 
     <application
-        android:label="Laennec AI Health Assistant"
+        android:label="Laennec AI Assistant"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon"
         android:enableOnBackInvokedCallback="true">

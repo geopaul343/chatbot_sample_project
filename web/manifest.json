@@ -1,11 +1,11 @@
 {
-    "name": "chatbot_sample_project",
-    "short_name": "chatbot_sample_project",
+    "name": "Laennec AI Assistant",
+    "short_name": "Laennec AI",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#hexcode",
     "theme_color": "#hexcode",
-    "description": "A new Flutter project.",
+    "description": "Laennec AI Assistant for respiratory health.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

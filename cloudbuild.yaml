@@ -184,7 +184,7 @@ timeout: '1800s'  # 30 minutes
 # Define substitutions
 substitutions:
   _BUCKET_NAME: 'chatbot_laennec_geo'
-  _VERSION_PREFIX: '1.0.6'
+  _VERSION_PREFIX: '1.0.9'
 
 # Build options
 options:
