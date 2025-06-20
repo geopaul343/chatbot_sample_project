@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:laennec_ai_health_assistant/bloc/chat_bloc.dart';
 import 'package:laennec_ai_health_assistant/bloc/chat_event.dart';
 import 'package:laennec_ai_health_assistant/bloc/chat_state.dart';
+import 'package:laennec_ai_health_assistant/screens/drawer_screen.dart';
+import 'package:laennec_ai_health_assistant/screens/voice_chat_screen.dart';
 import 'package:laennec_ai_health_assistant/widgets/answer_options.dart';
 import 'package:laennec_ai_health_assistant/widgets/buildtext_composer.dart';
 
@@ -58,19 +60,44 @@ class _ChatViewState extends State<ChatView> {
     final isLargeScreen = screenWidth > 400;
 
     return Scaffold(
+      drawer: const DrawerScreen(),
       appBar: AppBar(
         toolbarHeight: isSmallScreen ? 60 : 70,
         title: Text(
-          "Laennec AI Health Assistant",
+          "Laennec AI Assistant",
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: isSmallScreen ? 16 : (isLargeScreen ? 20 : 18),
           ),
         ),
+        leading: Builder(
+          builder: (context) {
+            return IconButton(
+              icon: const Icon(Icons.menu, color: Colors.white),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            );
+          },
+        ),
         centerTitle: true,
         backgroundColor: Colors.indigo.shade900,
         elevation: 0,
+        actions: [
+          // IconButton(
+          //   onPressed: () {
+          //     Navigator.push(
+          //       context,
+          //       MaterialPageRoute(
+          //         builder: (context) => const VoiceChatScreen(),
+          //       ),
+          //     );
+          //   },
+          //   icon: const Icon(Icons.mic, color: Colors.white),
+          //   tooltip: 'Voice Chat',
+          // ),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(

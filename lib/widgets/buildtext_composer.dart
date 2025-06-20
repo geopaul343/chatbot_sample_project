@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:laennec_ai_health_assistant/bloc/chat_bloc.dart';
 import 'package:laennec_ai_health_assistant/bloc/chat_event.dart';
 import 'package:laennec_ai_health_assistant/bloc/chat_state.dart';
+import 'package:laennec_ai_health_assistant/screens/voice_chat_screen.dart';
 
 Widget buildTextComposer(BuildContext context, ChatState state) {
   final bool isQuestionnaireComplete = state.isQuestionnaireComplete;
@@ -39,6 +40,24 @@ Widget buildTextComposer(BuildContext context, ChatState state) {
     ),
     child: Row(
       children: [
+        Padding(
+          padding: EdgeInsets.only(left: screenWidth * 0.02),
+          child: IconButton(
+            iconSize: isSmallScreen ? 20 : (isLargeScreen ? 28 : 24),
+            icon: Icon(
+              Icons.mic,
+              color: isEnabled ? Colors.white : Colors.grey.withOpacity(0.5),
+            ),
+            onPressed:
+                isEnabled
+                    ? () {
+                     Navigator.push(context, MaterialPageRoute(builder:(context) {
+                                    return const VoiceChatScreen();
+                     }, ));
+                    }
+                    : null,
+          ),
+        ),
         Expanded(
           child: TextField(
             controller: controller,
