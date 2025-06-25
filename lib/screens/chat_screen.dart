@@ -6,9 +6,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:bloc/bloc.dart';
 import 'package:http/http.dart' as http;
-import 'package:laennec_ai_assistant/bloc/chat_bloc.dart';
-import 'package:laennec_ai_assistant/bloc/chat_event.dart';
-import 'package:laennec_ai_assistant/bloc/chat_state.dart';
+import 'package:laennec_ai_assistant/bloc/chat_bloc/chat_bloc.dart';
+import 'package:laennec_ai_assistant/bloc/chat_bloc/chat_event.dart';
+import 'package:laennec_ai_assistant/bloc/chat_bloc/chat_state.dart';
 import 'package:laennec_ai_assistant/model/message.dart';
 import 'package:laennec_ai_assistant/questions/screen_questions.dart';
 import 'package:chat_bubbles/bubbles/bubble_normal.dart';
@@ -18,13 +18,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:bloc/bloc.dart';
 import 'package:http/http.dart' as http;
-import 'package:laennec_ai_assistant/bloc/chat_bloc.dart';
-import 'package:laennec_ai_assistant/bloc/chat_event.dart';
-import 'package:laennec_ai_assistant/bloc/chat_state.dart';
 import 'package:laennec_ai_assistant/model/message.dart';
 import 'package:laennec_ai_assistant/questions/screen_questions.dart';
 import 'package:laennec_ai_assistant/screens/drawer_screen.dart';
 import 'package:laennec_ai_assistant/screens/medical_disclaimer_screen.dart';
+import 'package:laennec_ai_assistant/screens/voice_chat_screen.dart';
 import 'package:laennec_ai_assistant/utils/first_launch_checker.dart';
 import 'package:laennec_ai_assistant/widgets/answer_options.dart';
 import 'package:laennec_ai_assistant/widgets/buildtext_composer.dart';
@@ -104,18 +102,18 @@ class _ChatViewState extends State<ChatView> {
         backgroundColor: Colors.indigo.shade900,
         elevation: 0,
         actions: [
-          // IconButton(
-          //   onPressed: () {
-          //     Navigator.push(
-          //       context,
-          //       MaterialPageRoute(
-          //         builder: (context) => const VoiceChatScreen(),
-          //       ),
-          //     );
-          //   },
-          //   icon: const Icon(Icons.mic, color: Colors.white),
-          //   tooltip: 'Voice Chat',
-          // ),
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const VoiceChatScreen(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.mic, color: Colors.white),
+            tooltip: 'Voice Chat',
+          ),
         ],
       ),
       body: Container(

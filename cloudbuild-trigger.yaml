@@ -14,7 +14,7 @@ filename: "cloudbuild.yaml"
 # Substitutions
 substitutions:
   _BUCKET_NAME: "chatbot_laennec_geo"
-  _VERSION_PREFIX: "1.0.16"
+  _VERSION_PREFIX: "1.0.18"
 
 # Include in trigger
 includedFiles:

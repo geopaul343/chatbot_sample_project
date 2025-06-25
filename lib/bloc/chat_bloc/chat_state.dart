@@ -1,14 +1,43 @@
 import 'package:equatable/equatable.dart';
 
-import 'dart:async';
-import 'dart:convert';
-import 'package:bloc/bloc.dart';
-import 'package:http/http.dart' as http;
-import 'package:laennec_ai_assistant/bloc/chat_event.dart';
-import 'package:laennec_ai_assistant/bloc/chat_state.dart';
 import 'package:laennec_ai_assistant/model/message.dart';
-import 'package:laennec_ai_assistant/questions/screen_questions.dart';
 
+// Base app state for splash functionality
+abstract class AppState extends Equatable {
+  const AppState();
+
+  @override
+  List<Object> get props => [];
+}
+
+// Splash states
+class SplashInitial extends AppState {
+  const SplashInitial();
+}
+
+class SplashLoading extends AppState {
+  final String statusMessage;
+
+  const SplashLoading(this.statusMessage);
+
+  @override
+  List<Object> get props => [statusMessage];
+}
+
+class SplashError extends AppState {
+  final String errorMessage;
+
+  const SplashError(this.errorMessage);
+
+  @override
+  List<Object> get props => [errorMessage];
+}
+
+class SplashComplete extends AppState {
+  const SplashComplete();
+}
+
+// Chat state (existing functionality)
 class ChatState extends Equatable {
   final List<Message> messages;
   final bool isTyping;

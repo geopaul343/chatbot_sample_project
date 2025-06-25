@@ -7,9 +7,9 @@ class VersionConfig {
   // Set this to a higher version than your current app version to test the update flow
   // Current app version: 1.0.7+12
   static const String minimumRequiredVersion =
-      '1.0.7'; // Change to '1.0.8' to force updates
+      '1.0.8'; // Change to '1.0.8' to force updates
   static const int minimumRequiredBuildNumber =
-      12; // Change to 13 or higher to force updates
+      15; // Change to 13 or higher to force updates
 
   // Update messaging
   static const String updateTitle = 'Update Required';

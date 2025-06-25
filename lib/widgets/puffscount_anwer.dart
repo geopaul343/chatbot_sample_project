@@ -1,42 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:animated_text_kit/animated_text_kit.dart';
-import 'package:chat_bubbles/bubbles/bubble_normal.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'dart:async';
-import 'dart:convert';
-import 'package:bloc/bloc.dart';
-import 'package:http/http.dart' as http;
-import 'package:laennec_ai_assistant/bloc/chat_bloc.dart';
-import 'package:laennec_ai_assistant/bloc/chat_event.dart';
-import 'package:laennec_ai_assistant/bloc/chat_state.dart';
-import 'package:laennec_ai_assistant/model/message.dart';
-import 'package:laennec_ai_assistant/questions/screen_questions.dart';
-import 'package:chat_bubbles/bubbles/bubble_normal.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'dart:async';
-import 'dart:convert';
-import 'package:bloc/bloc.dart';
-import 'package:http/http.dart' as http;
-import 'package:laennec_ai_assistant/bloc/chat_bloc.dart';
-import 'package:laennec_ai_assistant/bloc/chat_event.dart';
-import 'package:laennec_ai_assistant/bloc/chat_state.dart';
-import 'package:laennec_ai_assistant/model/message.dart';
-import 'package:laennec_ai_assistant/questions/screen_questions.dart';
-import 'package:laennec_ai_assistant/screens/chat_screen.dart';
-import 'package:laennec_ai_assistant/screens/drawer_screen.dart';
-import 'package:laennec_ai_assistant/screens/medical_disclaimer_screen.dart';
-import 'package:laennec_ai_assistant/screens/privacy_policy_screen.dart';
-import 'package:laennec_ai_assistant/screens/terms_condition_screen.dart';
-import 'package:laennec_ai_assistant/utils/first_launch_checker.dart';
-import 'package:laennec_ai_assistant/widgets/answer_options.dart';
-import 'package:laennec_ai_assistant/widgets/buildtext_composer.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:laennec_ai_assistant/bloc/chat_bloc/chat_bloc.dart';
+import 'package:laennec_ai_assistant/bloc/chat_bloc/chat_event.dart';
+import 'package:laennec_ai_assistant/bloc/chat_bloc/chat_state.dart';
 
 Widget buildPuffsPicker(BuildContext context, ChatState state) {
   int currentValue = int.tryParse(state.selectedAnswer ?? "1") ?? 1;

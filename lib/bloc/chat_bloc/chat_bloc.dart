@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
-import 'package:laennec_ai_assistant/bloc/chat_event.dart';
-import 'package:laennec_ai_assistant/bloc/chat_state.dart';
+import 'package:laennec_ai_assistant/bloc/chat_bloc/chat_event.dart';
+import 'package:laennec_ai_assistant/bloc/chat_bloc/chat_state.dart';
 import 'package:laennec_ai_assistant/model/message.dart';
 import 'package:laennec_ai_assistant/questions/screen_questions.dart';
 
@@ -372,5 +373,31 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         ..insert(0, botMessage);
       emit(state.copyWith(messages: finalMessages, isTyping: false));
     }
+  }
+}
+
+// SplashBloc for handling splash screen functionality
+class SplashBloc extends Bloc<AppEvent, AppState> {
+  SplashBloc() : super(const SplashInitial()) {
+    on<SplashStarted>(_onSplashStarted);
+    on<SplashUpdateStatus>(_onSplashUpdateStatus);
+    on<SplashShowError>(_onSplashShowError);
+    on<SplashCompleted>(_onSplashCompleted);
+  }
+
+  void _onSplashStarted(SplashStarted event, Emitter<AppState> emit) {
+    emit(const SplashLoading('Initializing...'));
+  }
+
+  void _onSplashUpdateStatus(SplashUpdateStatus event, Emitter<AppState> emit) {
+    emit(SplashLoading(event.statusMessage));
+  }
+
+  void _onSplashShowError(SplashShowError event, Emitter<AppState> emit) {
+    emit(SplashError(event.errorMessage));
+  }
+
+  void _onSplashCompleted(SplashCompleted event, Emitter<AppState> emit) {
+    emit(const SplashComplete());
   }
 }

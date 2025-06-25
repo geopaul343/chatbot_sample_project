@@ -1,6 +1,6 @@
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
+
 import 'version_config.dart';
 
 class VersionCheckService {

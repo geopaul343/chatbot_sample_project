@@ -86,9 +86,9 @@ version: 1.0.5+10
 **⚠️ IMPORTANT**: You must update **ALL 4 FILES** every time, or your build will fail!
 
 #### 1. **Update `pubspec.yaml`**
-```yaml
+   ```yaml
 # OLD
-version: 1.0.5+10
+   version: 1.0.5+10
 
 # NEW
 version: 1.0.6+11
@@ -101,7 +101,7 @@ defaultConfig {
     versionCode = 11        // ← Match the +11 from pubspec.yaml
     versionName = "1.0.6"   // ← Match the 1.0.6 from pubspec.yaml
 }
-```
+   ```
 
 #### 3. **Update `cloudbuild.yaml`**
 ```yaml
@@ -111,7 +111,7 @@ substitutions:
 ```
 
 #### 4. **Update `cloudbuild-trigger.yaml`**
-```yaml
+   ```yaml
 substitutions:
   _BUCKET_NAME: "chatbot_laennec_geo"
   _VERSION_PREFIX: "1.0.6"  # ← Match pubspec.yaml
