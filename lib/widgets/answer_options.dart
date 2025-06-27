@@ -36,7 +36,7 @@ Widget buildAnswerOptions(BuildContext context, ChatState state) {
         vertical: 8.0,
       ),
       constraints: BoxConstraints(
-        maxHeight: isSmallScreen ? 250 : (isLargeScreen ? 350 : 300),
+        maxHeight: isSmallScreen ? 270 : (isLargeScreen ? 370 : 320),
         maxWidth: screenWidth * 0.85,
       ),
       decoration: BoxDecoration(
@@ -58,13 +58,13 @@ Widget buildAnswerOptions(BuildContext context, ChatState state) {
           crossAxisAlignment: CrossAxisAlignment.start,
           children:
               state.answers.map((answer) {
-                final isSelected = answer == state.selectedAnswer;
+                final isSelected = answer.text == state.selectedAnswer;
                 return Material(
                   color: Colors.transparent,
                   child: InkWell(
                     onTap:
                         () => context.read<ChatBloc>().add(
-                          AnswerSubmitted(answer),
+                          AnswerSubmitted(answer.text),
                         ),
                     borderRadius: BorderRadius.circular(12),
                     child: Padding(
@@ -85,7 +85,7 @@ Widget buildAnswerOptions(BuildContext context, ChatState state) {
                           SizedBox(width: screenWidth * 0.03),
                           Expanded(
                             child: Text(
-                              answer,
+                              answer.text,
                               style: TextStyle(
                                 fontSize:
                                     isSmallScreen

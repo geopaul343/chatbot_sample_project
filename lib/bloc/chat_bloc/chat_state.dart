@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import 'package:laennec_ai_assistant/model/answer_option.dart';
 import 'package:laennec_ai_assistant/model/message.dart';
 
 // Base app state for splash functionality
@@ -45,9 +46,11 @@ class ChatState extends Equatable {
   final bool showAnswerOptions;
   final int currentQuestionIndex;
   final String? selectedAnswer;
-  final List<String> answers;
+  final List<AnswerOption> answers;
   final List<String> userAnswers;
+  final List<int> userScores;
   final bool expectingCustomInput;
+  final String? flareUpMessage;
 
   const ChatState({
     this.messages = const [],
@@ -58,7 +61,9 @@ class ChatState extends Equatable {
     this.selectedAnswer,
     this.answers = const [],
     this.userAnswers = const [],
+    this.userScores = const [],
     this.expectingCustomInput = false,
+    this.flareUpMessage,
   });
 
   ChatState copyWith({
@@ -68,10 +73,13 @@ class ChatState extends Equatable {
     bool? showAnswerOptions,
     int? currentQuestionIndex,
     String? selectedAnswer,
-    List<String>? answers,
+    List<AnswerOption>? answers,
     List<String>? userAnswers,
+    List<int>? userScores,
     bool? expectingCustomInput,
     bool clearSelectedAnswer = false,
+    String? flareUpMessage,
+    bool clearFlareUpMessage = false,
   }) {
     return ChatState(
       messages: messages ?? this.messages,
@@ -84,7 +92,10 @@ class ChatState extends Equatable {
           clearSelectedAnswer ? null : selectedAnswer ?? this.selectedAnswer,
       answers: answers ?? this.answers,
       userAnswers: userAnswers ?? this.userAnswers,
+      userScores: userScores ?? this.userScores,
       expectingCustomInput: expectingCustomInput ?? this.expectingCustomInput,
+      flareUpMessage:
+          clearFlareUpMessage ? null : flareUpMessage ?? this.flareUpMessage,
     );
   }
 
@@ -98,6 +109,8 @@ class ChatState extends Equatable {
     selectedAnswer,
     answers,
     userAnswers,
+    userScores,
     expectingCustomInput,
+    flareUpMessage,
   ];
 }

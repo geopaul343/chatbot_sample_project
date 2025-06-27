@@ -31,13 +31,14 @@ Widget buildRegularAnswerOptions(BuildContext context, ChatState state) {
         crossAxisAlignment: CrossAxisAlignment.start,
         children:
             state.answers.map((answer) {
-              final isSelected = answer == state.selectedAnswer;
+              final isSelected = answer.text == state.selectedAnswer;
               return Material(
                 color: Colors.transparent,
                 child: InkWell(
                   onTap:
-                      () =>
-                          context.read<ChatBloc>().add(AnswerSubmitted(answer)),
+                      () => context.read<ChatBloc>().add(
+                        AnswerSubmitted(answer.text),
+                      ),
                   borderRadius: BorderRadius.circular(12),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
@@ -56,7 +57,7 @@ Widget buildRegularAnswerOptions(BuildContext context, ChatState state) {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            answer,
+                            answer.text,
                             style: TextStyle(
                               fontSize: 16,
                               color: Colors.white,

@@ -26,6 +26,7 @@ import 'package:laennec_ai_assistant/screens/voice_chat_screen.dart';
 import 'package:laennec_ai_assistant/utils/first_launch_checker.dart';
 import 'package:laennec_ai_assistant/widgets/answer_options.dart';
 import 'package:laennec_ai_assistant/widgets/buildtext_composer.dart';
+import 'package:laennec_ai_assistant/widgets/flare_up_message_widget.dart';
 
 // ChatScreen widget to display a chatbot interface
 class ChatScreen extends StatelessWidget {
@@ -207,6 +208,13 @@ class _ChatViewState extends State<ChatView> {
                     ),
                   ),
                 buildAnswerOptions(context, state),
+                if (state.flareUpMessage != null)
+                  FlareUpMessageWidget(
+                    message: state.flareUpMessage!,
+                    isEmergency: state.flareUpMessage!.startsWith(
+                      "Seek urgent help",
+                    ),
+                  ),
                 buildTextComposer(context, state),
                 SizedBox(height: 25),
               ],

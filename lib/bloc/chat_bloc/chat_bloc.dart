@@ -5,54 +5,61 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:laennec_ai_assistant/bloc/chat_bloc/chat_event.dart';
 import 'package:laennec_ai_assistant/bloc/chat_bloc/chat_state.dart';
+import 'package:laennec_ai_assistant/model/answer_option.dart';
 import 'package:laennec_ai_assistant/model/message.dart';
 import 'package:laennec_ai_assistant/questions/screen_questions.dart';
 
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
   // Hardcoded API key and answers for simplicity in the BLoC context.
   final String _apiKey = "AIzaSyCt71fTFExKKepEv4reR3pkCBiD-o4-hqA";
-  final List<List<String>> predefinedAnswers = [
+  final List<List<AnswerOption>> predefinedAnswers = [
     [
-      "No breathlessness",
-      "Slight breathlessness",
-      "Moderate breathlessness",
-      "Severe breathlessness",
-      "Very severe breathlessness",
+      const AnswerOption("No issues", value: 0),
+      const AnswerOption("No breathlessness", value: 0),
+      const AnswerOption("Slight breathlessness", value: 1),
+      const AnswerOption("Moderate breathlessness", value: 2),
+      const AnswerOption("Severe breathlessness", value: 3),
+      const AnswerOption("Very severe breathlessness", value: 4),
+      const AnswerOption("Worsening", value: 5),
     ],
-    ["Yes", "No"],
+    [const AnswerOption("Yes"), const AnswerOption("No")],
     [
-      "1",
-      "2",
-      "3",
-      "4",
-      "5",
-      "6",
-      "7",
-      "8",
-      "9",
-      "10",
-      "11",
-      "12",
-      "13",
-      "14",
-      "15",
-      "16",
-      "17",
-      "18",
-      "19",
-      "20",
-      "21",
-      "22",
-      "23",
-      "24",
-      "25",
+      const AnswerOption("1"),
+      const AnswerOption("2"),
+      const AnswerOption("3"),
+      const AnswerOption("4"),
+      const AnswerOption("5"),
+      const AnswerOption("6"),
+      const AnswerOption("7"),
+      const AnswerOption("8"),
+      const AnswerOption("9"),
+      const AnswerOption("10"),
+      const AnswerOption("11"),
+      const AnswerOption("12"),
+      const AnswerOption("13"),
+      const AnswerOption("14"),
+      const AnswerOption("15"),
+      const AnswerOption("16"),
+      const AnswerOption("17"),
+      const AnswerOption("18"),
+      const AnswerOption("19"),
+      const AnswerOption("20"),
+      const AnswerOption("21"),
+      const AnswerOption("22"),
+      const AnswerOption("23"),
+      const AnswerOption("24"),
+      const AnswerOption("25"),
     ],
-
-    ["Yes", "No"],
-    ["Yes", "No"],
-    ["Yes", "No"],
-    ["Green", "Yellow", "White", "Other"],
-    ["Yes", "No"],
+    [const AnswerOption("Yes"), const AnswerOption("No")],
+    [const AnswerOption("Yes"), const AnswerOption("No")],
+    [const AnswerOption("Yes"), const AnswerOption("No")],
+    [
+      const AnswerOption("Green"),
+      const AnswerOption("Yellow"),
+      const AnswerOption("White"),
+      const AnswerOption("Other"),
+    ],
+    [const AnswerOption("Yes"), const AnswerOption("No")],
   ];
 
   ChatBloc() : super(const ChatState()) {
@@ -77,6 +84,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         currentQuestionIndex: 0,
         answers: predefinedAnswers[0],
         userAnswers: [], // Initialize user answers tracking
+        userScores: [], // Initialize user scores
       ),
     );
   }
@@ -92,6 +100,11 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       formattedAnswers.add("A${i + 1}: ${state.userAnswers[i]}");
       formattedAnswers.add(""); // Empty line for spacing
     }
+    final totalScore = state.userScores.fold<int>(
+      0,
+      (prev, score) => prev + score,
+    );
+    formattedAnswers.add("Total Score: $totalScore");
     return "Here's a summary of your responses:\n\n${formattedAnswers.join('\n')}";
   }
 
@@ -105,9 +118,190 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     final newMessages = List<Message>.from(state.messages)
       ..insert(0, Message(true, event.answer));
 
+    // Find the selected answer option to get its value
+    final selectedOption = predefinedAnswers[state.currentQuestionIndex]
+        .firstWhere(
+          (option) => option.text == event.answer,
+          orElse: () => const AnswerOption("", value: 0),
+        );
+
     // Add answer to user answers collection
     final updatedUserAnswers = List<String>.from(state.userAnswers)
       ..add(event.answer);
+    final updatedUserScores = List<int>.from(state.userScores)
+      ..add(selectedOption.value ?? 0);
+
+    String? flareUpMessage;
+    if (selectedOption.value == 3) {
+      flareUpMessage =
+          "Your COPD symptoms may be flaring—check your action plan, ensure you're using your maintenance inhalers correctly, and consider contacting your nurse if symptoms persist or worsen.";
+    } else if (selectedOption.value != null && selectedOption.value! >= 4) {
+      flareUpMessage =
+          "Seek urgent help. Call 999 if severely unwell, or contact your GP/nurse immediately.";
+    }
+
+    // Special handling for question index 1 (reliever inhaler question)
+    if (state.currentQuestionIndex == 1) {
+      emit(
+        state.copyWith(
+          messages: newMessages,
+          isTyping: true,
+          userAnswers: updatedUserAnswers,
+          userScores: updatedUserScores,
+          flareUpMessage: flareUpMessage,
+        ),
+      );
+
+      await Future.delayed(const Duration(milliseconds: 800));
+
+      if (event.answer.toLowerCase() == "yes") {
+        // Go to question 2 (puffs count)
+        final nextIndex = 2;
+        final nextQuestionMessages = List<Message>.from(state.messages)
+          ..insert(0, Message(false, screenQuestions[nextIndex]));
+        emit(
+          state.copyWith(
+            messages: nextQuestionMessages,
+            isTyping: false,
+            showAnswerOptions: true,
+            currentQuestionIndex: nextIndex,
+            clearSelectedAnswer: true,
+            answers: predefinedAnswers[nextIndex],
+            userAnswers: updatedUserAnswers,
+            userScores: updatedUserScores,
+          ),
+        );
+      } else {
+        // "No": Skip question 2 and go to question 3
+        final nextIndex = 3;
+
+        // Add placeholder for skipped question 2
+        final updatedUserAnswersWithSkip = List<String>.from(updatedUserAnswers)
+          ..add("N/A (reliever inhaler not used)");
+        final updatedUserScoresWithSkip = List<int>.from(updatedUserScores)
+          ..add(0); // No score for skipped question
+
+        final nextQuestionMessages = List<Message>.from(state.messages)
+          ..insert(0, Message(false, screenQuestions[nextIndex]));
+        emit(
+          state.copyWith(
+            messages: nextQuestionMessages,
+            isTyping: false,
+            showAnswerOptions: true,
+            currentQuestionIndex: nextIndex,
+            clearSelectedAnswer: true,
+            answers: predefinedAnswers[nextIndex],
+            userAnswers: updatedUserAnswersWithSkip,
+            userScores: updatedUserScoresWithSkip,
+          ),
+        );
+      }
+      return; // Stop further execution
+    }
+
+    // Special handling for question index 5 (sputum changes)
+    if (state.currentQuestionIndex == 5) {
+      if (event.answer.toLowerCase() == "no") {
+        emit(
+          state.copyWith(
+            messages: newMessages,
+            isTyping: true,
+            userAnswers: updatedUserAnswers,
+            userScores: updatedUserScores,
+            flareUpMessage: flareUpMessage,
+          ),
+        );
+
+        await Future.delayed(const Duration(milliseconds: 800));
+
+        // "No": Skip question 6 and go to question 7
+        final nextIndex = 7;
+
+        // Add placeholder for skipped question 6
+        final updatedUserAnswersWithSkip = List<String>.from(updatedUserAnswers)
+          ..add("N/A (no sputum changes)");
+        final updatedUserScoresWithSkip = List<int>.from(updatedUserScores)
+          ..add(0); // No score for skipped question
+
+        final nextQuestionMessages = List<Message>.from(state.messages)
+          ..insert(0, Message(false, screenQuestions[nextIndex]));
+        emit(
+          state.copyWith(
+            messages: nextQuestionMessages,
+            isTyping: false,
+            showAnswerOptions: true,
+            currentQuestionIndex: nextIndex,
+            clearSelectedAnswer: true,
+            answers: predefinedAnswers[nextIndex],
+            userAnswers: updatedUserAnswersWithSkip,
+            userScores: updatedUserScoresWithSkip,
+          ),
+        );
+        return; // Stop further execution
+      }
+    }
+
+    // Special handling for question index 7
+    if (state.currentQuestionIndex == 7) {
+      if (event.answer.toLowerCase() == "no") {
+        // "No": End the questionnaire
+        final finalMessages =
+            List<Message>.from(newMessages)
+              ..insert(0, Message(false, _formatAllAnswers()))
+              ..insert(
+                0,
+                Message(
+                  false,
+                  "Thank you for your responses! You can now ask me anything.",
+                ),
+              );
+        emit(
+          state.copyWith(
+            messages: finalMessages,
+            isTyping: false,
+            showAnswerOptions: false,
+            isQuestionnaireComplete: true,
+            clearSelectedAnswer: true,
+            answers: const [],
+            userAnswers: updatedUserAnswers,
+            userScores: updatedUserScores,
+            flareUpMessage: flareUpMessage,
+          ),
+        );
+        return; // Stop further execution
+      } else {
+        // "Yes": Go to question 8 (free text)
+        emit(
+          state.copyWith(
+            messages: newMessages,
+            isTyping: true,
+            userAnswers: updatedUserAnswers,
+            userScores: updatedUserScores,
+            flareUpMessage: flareUpMessage,
+          ),
+        );
+
+        await Future.delayed(const Duration(milliseconds: 800));
+
+        final nextIndex = 8;
+        final nextQuestionMessages = List<Message>.from(state.messages)
+          ..insert(0, Message(false, screenQuestions[nextIndex]));
+        emit(
+          state.copyWith(
+            messages: nextQuestionMessages,
+            isTyping: false,
+            showAnswerOptions: false, // Hide answer options
+            expectingCustomInput: true, // Set flag for custom input
+            currentQuestionIndex: nextIndex,
+            clearSelectedAnswer: true,
+            answers: const [],
+            userAnswers: updatedUserAnswers,
+            userScores: updatedUserScores,
+          ),
+        );
+        return;
+      }
+    }
 
     // Special handling for question index 3 (maintenance inhaler question)
     if (state.currentQuestionIndex == 3) {
@@ -116,6 +310,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           messages: newMessages,
           isTyping: true,
           userAnswers: updatedUserAnswers,
+          userScores: updatedUserScores,
+          flareUpMessage: flareUpMessage,
         ),
       );
 
@@ -135,6 +331,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
             clearSelectedAnswer: true,
             answers: const [],
             userAnswers: updatedUserAnswers,
+            userScores: updatedUserScores,
           ),
         );
       } else {
@@ -146,6 +343,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           final updatedUserAnswersWithSkip = List<String>.from(
             updatedUserAnswers,
           )..add("N/A (maintenance inhaler was taken)");
+          final updatedUserScoresWithSkip = List<int>.from(updatedUserScores)
+            ..add(0); // No score for skipped question
 
           final nextQuestionMessages = List<Message>.from(state.messages)
             ..insert(0, Message(false, screenQuestions[nextIndex]));
@@ -158,6 +357,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
               clearSelectedAnswer: true,
               answers: predefinedAnswers[nextIndex],
               userAnswers: updatedUserAnswersWithSkip,
+              userScores: updatedUserScoresWithSkip,
             ),
           );
         } else {
@@ -181,6 +381,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
               clearSelectedAnswer: true,
               answers: const [],
               userAnswers: updatedUserAnswers,
+              userScores: updatedUserScores,
+              flareUpMessage: flareUpMessage,
             ),
           );
         }
@@ -196,6 +398,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         isTyping: true,
         currentQuestionIndex: nextIndex,
         userAnswers: updatedUserAnswers,
+        userScores: updatedUserScores,
+        flareUpMessage: flareUpMessage,
       ),
     );
 
@@ -213,6 +417,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           clearSelectedAnswer: true,
           answers: predefinedAnswers[nextIndex],
           userAnswers: updatedUserAnswers,
+          userScores: updatedUserScores,
         ),
       );
     } else {
@@ -236,6 +441,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           clearSelectedAnswer: true,
           answers: const [],
           userAnswers: updatedUserAnswers,
+          userScores: updatedUserScores,
+          flareUpMessage: flareUpMessage,
         ),
       );
     }
@@ -251,25 +458,32 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     final newMessages = List<Message>.from(state.messages)
       ..insert(0, userMessage);
 
-    // Special case: If we're expecting custom input (reason for not taking maintenance inhaler)
-    if (state.expectingCustomInput && state.currentQuestionIndex == 4) {
+    // Special case: If we're expecting custom input
+    if (state.expectingCustomInput) {
       // Add the custom reason to user answers
       final updatedUserAnswers = List<String>.from(state.userAnswers)
         ..add(event.message);
+      final updatedUserScores = List<int>.from(state.userScores)
+        ..add(0); // No score for custom input
 
       emit(
         state.copyWith(
           messages: newMessages,
           isTyping: true,
           userAnswers: updatedUserAnswers,
+          userScores: updatedUserScores,
           expectingCustomInput: false,
         ),
       );
 
       await Future.delayed(const Duration(milliseconds: 800));
 
-      // Continue to question 5
-      final nextIndex = 5;
+      // Determine next question
+      int nextIndex = state.currentQuestionIndex + 1;
+      if (state.currentQuestionIndex == 4) {
+        nextIndex = 5; // After Q4 free text, go to Q5
+      }
+
       if (nextIndex < screenQuestions.length &&
           nextIndex < predefinedAnswers.length) {
         final nextQuestionMessages = List<Message>.from(state.messages)
@@ -282,6 +496,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
             currentQuestionIndex: nextIndex,
             answers: predefinedAnswers[nextIndex],
             userAnswers: updatedUserAnswers,
+            userScores: updatedUserScores,
           ),
         );
       } else {
@@ -304,6 +519,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
             isQuestionnaireComplete: true,
             answers: const [],
             userAnswers: updatedUserAnswers,
+            userScores: updatedUserScores,
           ),
         );
       }
