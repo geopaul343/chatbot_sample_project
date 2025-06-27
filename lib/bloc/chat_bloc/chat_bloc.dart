@@ -60,6 +60,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       const AnswerOption("Other"),
     ],
     [const AnswerOption("Yes"), const AnswerOption("No")],
+    [const AnswerOption("Yes"), const AnswerOption("No")],
+    [const AnswerOption("Yes"), const AnswerOption("No")],
   ];
 
   ChatBloc() : super(const ChatState()) {
@@ -270,7 +272,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         );
         return; // Stop further execution
       } else {
-        // "Yes": Go to question 8 (free text)
+        // "Yes": Go to question 8 with predefined answers
         emit(
           state.copyWith(
             messages: newMessages,
@@ -290,11 +292,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           state.copyWith(
             messages: nextQuestionMessages,
             isTyping: false,
-            showAnswerOptions: false, // Hide answer options
-            expectingCustomInput: true, // Set flag for custom input
+            showAnswerOptions: true,
             currentQuestionIndex: nextIndex,
             clearSelectedAnswer: true,
-            answers: const [],
+            answers: predefinedAnswers[nextIndex],
             userAnswers: updatedUserAnswers,
             userScores: updatedUserScores,
           ),
